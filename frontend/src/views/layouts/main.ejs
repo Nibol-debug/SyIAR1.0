@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - SyIAR Gemilang</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-teal-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="text-xl font-bold">SyIAR Gemilang</a>
+                <% if (user) { %>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm">Halo, <%= user.nama_lengkap %></span>
+                    <a href="/logout" class="bg-red-600 px-3 py-1 rounded hover:bg-red-700 transition text-sm">Logout</a>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto px-4 py-8">
+        <%- body %>
+    </main>
+</body>
+</html>

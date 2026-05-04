@@ -24,8 +24,8 @@ class AuthController extends BaseController
     {
         helper('jwt_helper');
         
-        // Debug: Log incoming request
-        log_message('debug', 'Login attempt received');
+        // Debug log
+        log_message('debug', 'Login attempt received: ' . json_encode($this->request->getJSON(true)));
         
         $rules = [
             'username' => 'required',
@@ -33,7 +33,10 @@ class AuthController extends BaseController
         ];
         
         if (!$this->validate($rules)) {
-            return $this->fail($this->validator->getErrors(), 400);
+            return $this->fail([
+                'status' => 'error',
+                'message' => 'Username dan password wajib diisi'
+            ], 400);
         }
         
         $username = $this->request->getVar('username');
@@ -44,21 +47,34 @@ class AuthController extends BaseController
                                 ->orWhere('email', $username)
                                 ->first();
         
-        if (!$user || !password_verify($password, $user->password_hash)) {
-            // Log failed attempt (user_id = 0 atau null)
+        // 🔥 FIX: Error spesifik untuk username tidak ditemukan
+        if (!$user) {
+            // Log failed attempt
             $this->loginLogModel->logAttempt(0, 'failed', $this->request);
             
             return $this->fail([
                 'status' => 'error',
-                'message' => 'Username atau password salah'
-            ], 401);
+                'message' => 'Username tidak ditemukan'
+            ], 401);  // ← 401 Unauthorized, bukan 500
         }
         
+        // 🔥 FIX: Error spesifik untuk password salah
+        if (!password_verify($password, $user->password_hash)) {
+            // Log failed attempt
+            $this->loginLogModel->logAttempt($user->id, 'failed', $this->request);
+            
+            return $this->fail([
+                'status' => 'error',
+                'message' => 'Password salah'
+            ], 401);  // ← 401 Unauthorized
+        }
+        
+        // Cek status akun
         if (!$user->is_active) {
             return $this->fail([
                 'status' => 'error',
-                'message' => 'Akun Anda telah dinonaktifkan'
-            ], 403);
+                'message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi administrator.'
+            ], 403);  // ← 403 Forbidden
         }
         
         // Get user roles
@@ -86,6 +102,7 @@ class AuthController extends BaseController
         // Log success
         $this->loginLogModel->logAttempt($user->id, 'success', $this->request);
         
+        // 🔥 SUCCESS: Return 200 OK
         return $this->respond([
             'status' => 'success',
             'message' => 'Login berhasil',
@@ -94,7 +111,7 @@ class AuthController extends BaseController
                 'user' => $userData,
                 'permissions' => $permissions
             ]
-        ]);
+        ], 200);
     }
     
     public function me()

@@ -14,9 +14,8 @@ class LoginLogModel extends Model
     
     public function logAttempt($userId, $status, $request)
     {
-        // Skip jika tidak ada koneksi atau error
         try {
-            // Pastikan user_id valid (jika 0 atau null, set ke null)
+            // Pastikan user_id valid (jika 0, set ke null)
             $validUserId = ($userId > 0) ? $userId : null;
             
             $data = [
@@ -27,18 +26,8 @@ class LoginLogModel extends Model
                 'status' => $status
             ];
             
-            // Coba insert
-            $result = $this->insert($data);
-            
-            // Jika gagal karena foreign key, insert tanpa user_id
-            if (!$result && $this->db->error()['code'] == 1452) {
-                unset($data['user_id']);
-                $result = $this->insert($data);
-            }
-            
-            return $result;
+            return $this->insert($data);
         } catch (\Exception $e) {
-            // Log error tapi jangan throw
             log_message('error', 'Login log failed (non-critical): ' . $e->getMessage());
             return false;
         }

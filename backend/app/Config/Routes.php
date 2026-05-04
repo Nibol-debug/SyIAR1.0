@@ -4,11 +4,6 @@ namespace Config;
 
 use CodeIgniter\Router\RouteCollection;
 
-/**
- * @var RouteCollection $routes
- */
-
-// 🔥 IMPORTANT: Handle OPTIONS preflight untuk SEMUA route
 $routes->options('(:any)', function() {
     $response = service('response');
     $response->setStatusCode(200);
@@ -21,24 +16,24 @@ $routes->options('(:any)', function() {
     return $response;
 });
 
-// API Routes Group
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) {
-    // Public routes
+    // Auth
     $routes->post('auth/login', 'AuthController::login');
+    $routes->get('auth/me', 'AuthController::me', ['filter' => 'auth']);
+    $routes->post('auth/logout', 'AuthController::logout', ['filter' => 'auth']);
     
-    // Protected routes (akan diaktifkan nanti)
-    $routes->group('', ['filter' => 'auth'], function($routes) {
-        $routes->get('auth/me', 'AuthController::me');
-        $routes->post('auth/logout', 'AuthController::logout');
+    // Roles
+    $routes->group('roles', ['filter' => 'auth'], function($routes) {
+        $routes->get('/', 'RoleController::index');
+        $routes->get('permissions', 'RoleController::getPermissions');
+        $routes->get('(:num)/permissions', 'RoleController::getRolePermissions/$1');
+        $routes->post('/', 'RoleController::create');
+        $routes->put('(:num)', 'RoleController::update/$1');
+        $routes->delete('(:num)', 'RoleController::delete/$1');
+        $routes->post('update-permission/(:num)', 'RoleController::updatePermissions/$1');
     });
 });
 
-// Health check
 $routes->get('/health', function() {
-    return service('response')->setJSON(['status' => 'ok', 'timestamp' => date('Y-m-d H:i:s')]);
-});
-
-// Default route (optional)
-$routes->get('/', function() {
-    return 'SyIAR API is running';
+    return service('response')->setJSON(['status' => 'ok']);
 });
