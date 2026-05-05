@@ -102,7 +102,18 @@ router.post('/input/submit', requireAuth, permission('penilaian.create'), async 
         const { santri_id, periode, keterangan, is_draft } = req.body;
         
         // Extract values from form (values[aspek_id] = nilai)
-        const values = req.body.values || {};
+        let values = {};
+        if (req.body.values && typeof req.body.values === 'object') {
+            values = req.body.values;
+        } else {
+            // Fallback for extended: false
+            Object.keys(req.body).forEach(key => {
+                if (key.startsWith('values[')) {
+                    const id = key.match(/\[(.*?)\]/)[1];
+                    values[id] = req.body[key];
+                }
+            });
+        }
         
         if (!santri_id || Object.keys(values).length === 0) {
             req.flash('error', 'Data penilaian tidak lengkap');
@@ -112,6 +123,7 @@ router.post('/input/submit', requireAuth, permission('penilaian.create'), async 
         // Convert select values like "A","B","C","D" to numeric
         const numericValues = {};
         Object.entries(values).forEach(([aspekId, nilai]) => {
+            if (nilai === '') return; // Skip empty
             const map = { 'A': 90, 'B': 75, 'C': 60, 'D': 40 };
             numericValues[aspekId] = map[nilai] !== undefined ? map[nilai] : parseFloat(nilai) || 0;
         });
