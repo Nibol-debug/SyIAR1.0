@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/penilaian'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="mb-6">
+            <a href="/penilaian" class="text-sm text-slate-500 hover:text-primary flex items-center gap-1 mb-4">
+                <span class="material-symbols-outlined text-lg">arrow_back</span> Kembali
+            </a>
+            <h1 class="text-2xl font-bold text-on-surface"><%= title %></h1>
+        </div>
+
+        <!-- Filter -->
+        <form method="GET" class="flex gap-3 mb-6 items-end flex-wrap">
+            <div>
+                <label class="text-xs text-slate-500 font-medium mb-1 block">Kelas</label>
+                <select name="kelas_id" required class="px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                    <option value="">-- Pilih Kelas --</option>
+                    <% if (typeof kelas !== 'undefined') kelas.forEach(function(k) { %>
+                        <option value="<%= k.id %>" <%= filters?.kelas_id == k.id ? 'selected' : '' %>><%= k.nama_kelas %> - <%= k.jurusan %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-slate-500 font-medium mb-1 block">Periode</label>
+                <input type="month" name="periode" value="<%= filters?.periode || '' %>" class="px-3 py-2 border border-slate-200 rounded-lg text-sm">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium">Tampilkan</button>
+        </form>
+
+        <!-- Rekap Table -->
+        <% if (typeof rekap !== 'undefined' && rekap.length > 0) { %>
+        <div class="overflow-x-auto rounded-lg border border-slate-200">
+            <table class="w-full">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">NIS</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nama</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Nilai</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <% rekap.forEach(function(r) { %>
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="px-4 py-3 text-sm font-mono"><%= r.nis %></td>
+                        <td class="px-4 py-3 text-sm font-medium"><%= r.nama %></td>
+                        <td class="px-4 py-3 text-sm">
+                            <% if (r.nilai && typeof r.nilai === 'object') { %>
+                                <% Object.keys(r.nilai).forEach(function(kategori) { %>
+                                    <div class="mb-1">
+                                        <span class="text-xs font-semibold text-primary"><%= kategori %>:</span>
+                                        <% r.nilai[kategori].forEach(function(n) { %>
+                                            <span class="inline-block px-2 py-0.5 bg-slate-100 rounded text-xs ml-1"><%= n.aspek %>: <%= n.nilai %></span>
+                                        <% }); %>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <span class="text-slate-400">-</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <% } else if (filters?.kelas_id) { %>
+        <div class="text-center py-12 text-slate-400">
+            <span class="material-symbols-outlined text-5xl mb-3">search_off</span>
+            <p>Belum ada data penilaian untuk kelas dan periode ini.</p>
+        </div>
+        <% } else { %>
+        <div class="text-center py-12 text-slate-400">
+            <span class="material-symbols-outlined text-5xl mb-3">leaderboard</span>
+            <p>Pilih kelas dan periode untuk melihat rekap penilaian.</p>
+        </div>
+        <% } %>
+    </div>
+</main>
+
+</body>
+</html>

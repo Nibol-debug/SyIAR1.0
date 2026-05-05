@@ -1,0 +1,48 @@
+<%- include('../layouts/main') %>
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h1 class="text-2xl font-bold mb-6"><%= isEdit ? 'Edit Santri' : 'Tambah Santri' %></h1>
+        
+        <form method="POST" action="<%= isEdit ? `/santri/${santri.id}` : '/santri' %>">
+            <input type="hidden" name="_method" value="<%= isEdit ? 'PUT' : 'POST' %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">NIS</label>
+                <input type="text" name="nis" value="<%= santri.nis || '' %>" class="w-full border rounded-lg px-3 py-2" required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Nama Lengkap</label>
+                <input type="text" name="nama_lengkap" value="<%= santri.nama_lengkap || '' %>" class="w-full border rounded-lg px-3 py-2" required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Kelas</label>
+                <input type="text" name="kelas" value="<%= santri.kelas || '' %>" class="w-full border rounded-lg px-3 py-2" required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Jenis Kelamin</label>
+                <select name="jenis_kelamin" class="w-full border rounded-lg px-3 py-2">
+                    <option value="L" <%= santri.jenis_kelamin === 'L' ? 'selected' : '' %>>Laki-laki</option>
+                    <option value="P" <%= santri.jenis_kelamin === 'P' ? 'selected' : '' %>>Perempuan</option>
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Status</label>
+                <select name="status" class="w-full border rounded-lg px-3 py-2">
+                    <option value="aktif" <%= santri.status === 'aktif' ? 'selected' : '' %>>Aktif</option>
+                    <option value="alumni" <%= santri.status === 'alumni' ? 'selected' : '' %>>Alumni</option>
+                </select>
+            </div>
+            
+            <div class="flex justify-end gap-3">
+                <a href="/santri" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Batal</a>
+                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>

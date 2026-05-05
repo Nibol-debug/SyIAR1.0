@@ -8,118 +8,88 @@ class InitialDataSeeder extends Seeder
 {
     public function run()
     {
-        // Insert roles jika belum ada
+        // Helper to insert if not exists
+        $insertIfNotExists = function($table, $uniqueField, $data) {
+            $exists = $this->db->table($table)->where($uniqueField, $data[$uniqueField])->get()->getRow();
+            if (!$exists) {
+                $this->db->table($table)->insert($data);
+                return true;
+            }
+            return false;
+        };
+
+        // 1. SEED ROLES
         $roles = [
-            ['nama_role' => 'super_admin', 'deskripsi' => 'Akses penuh ke semua fitur'],
-            ['nama_role' => 'admin_akademik', 'deskripsi' => 'Mengelola data akademik dan penilaian'],
-            ['nama_role' => 'guru', 'deskripsi' => 'Input penilaian dan melihat siswa'],
-            ['nama_role' => 'kepala_bagian', 'deskripsi' => 'Melihat laporan dan rekap'],
+            ['name' => 'Super Admin',      'slug' => 'super_admin',      'description' => 'Akses penuh ke semua fitur sistem', 'is_active' => 1],
+            ['name' => 'Admin Akademik',   'slug' => 'admin_akademik',   'description' => 'Mengelola data akademik & penilaian', 'is_active' => 1],
+            ['name' => 'Guru',             'slug' => 'guru',             'description' => 'Input penilaian & melihat data santri', 'is_active' => 1],
+            ['name' => 'Kepala Bagian',    'slug' => 'kepala_bagian',    'description' => 'Melihat laporan & rekap data', 'is_active' => 1],
         ];
-        
-        foreach ($roles as $role) {
-            $exists = $this->db->table('roles')
-                ->where('nama_role', $role['nama_role'])
-                ->get()
-                ->getRow();
-            
-            if (!$exists) {
-                $this->db->table('roles')->insert($role);
-                echo "Role '{$role['nama_role']} ditambahkan\n";
-            } else {
-                echo "Role '{$role['nama_role']}' sudah ada, skip\n";
-            }
-        }
-        
-        // Insert permissions jika belum ada
+        $cnt = 0;
+        foreach ($roles as $r) { if ($insertIfNotExists('roles', 'slug', $r)) $cnt++; }
+        echo "✅ Seeded: {$cnt} new Roles\n";
+
+        // 2. SEED PERMISSIONS
         $permissions = [
-            ['kode' => 'user.create', 'modul' => 'user', 'aksi' => 'create', 'deskripsi' => 'Membuat user baru'],
-            ['kode' => 'user.read', 'modul' => 'user', 'aksi' => 'read', 'deskripsi' => 'Melihat data user'],
-            ['kode' => 'user.update', 'modul' => 'user', 'aksi' => 'update', 'deskripsi' => 'Mengedit user'],
-            ['kode' => 'user.delete', 'modul' => 'user', 'aksi' => 'delete', 'deskripsi' => 'Menghapus user'],
-            ['kode' => 'role.manage', 'modul' => 'role', 'aksi' => 'manage', 'deskripsi' => 'Kelola role & permission'],
-            ['kode' => 'penilaian.create', 'modul' => 'penilaian', 'aksi' => 'create', 'deskripsi' => 'Input nilai'],
-            ['kode' => 'penilaian.read', 'modul' => 'penilaian', 'aksi' => 'read', 'deskripsi' => 'Lihat penilaian'],
-            ['kode' => 'penilaian.update', 'modul' => 'penilaian', 'aksi' => 'update', 'deskripsi' => 'Edit nilai'],
-            ['kode' => 'penilaian.delete', 'modul' => 'penilaian', 'aksi' => 'delete', 'deskripsi' => 'Hapus nilai'],
-            ['kode' => 'penilaian.export', 'modul' => 'penilaian', 'aksi' => 'export', 'deskripsi' => 'Export data penilaian'],
-            ['kode' => 'master.santri.create', 'modul' => 'master', 'aksi' => 'create', 'deskripsi' => 'Tambah santri'],
-            ['kode' => 'master.santri.read', 'modul' => 'master', 'aksi' => 'read', 'deskripsi' => 'Lihat santri'],
-            ['kode' => 'master.santri.update', 'modul' => 'master', 'aksi' => 'update', 'deskripsi' => 'Edit santri'],
-            ['kode' => 'master.santri.delete', 'modul' => 'master', 'aksi' => 'delete', 'deskripsi' => 'Hapus santri'],
-            ['kode' => 'master.aspek.manage', 'modul' => 'master', 'aksi' => 'manage', 'deskripsi' => 'Kelola aspek penilaian'],
+            ['code' => 'user.create',       'module' => 'user',       'action' => 'create', 'description' => 'Membuat user baru'],
+            ['code' => 'user.read',         'module' => 'user',       'action' => 'read',   'description' => 'Melihat data user'],
+            ['code' => 'user.update',       'module' => 'user',       'action' => 'update', 'description' => 'Mengedit user'],
+            ['code' => 'user.delete',       'module' => 'user',       'action' => 'delete', 'description' => 'Menghapus user'],
+            ['code' => 'role.manage',       'module' => 'role',       'action' => 'manage', 'description' => 'Kelola role & permission'],
+            ['code' => 'penilaian.create',  'module' => 'penilaian',  'action' => 'create', 'description' => 'Input nilai santri'],
+            ['code' => 'penilaian.read',    'module' => 'penilaian',  'action' => 'read',   'description' => 'Lihat rekap penilaian'],
+            ['code' => 'penilaian.update',  'module' => 'penilaian',  'action' => 'update', 'description' => 'Edit nilai'],
+            ['code' => 'penilaian.delete',  'module' => 'penilaian',  'action' => 'delete', 'description' => 'Hapus nilai'],
+            ['code' => 'penilaian.export',  'module' => 'penilaian',  'action' => 'export', 'description' => 'Export data penilaian'],
+            ['code' => 'santri.create',     'module' => 'santri',     'action' => 'create', 'description' => 'Tambah data santri'],
+            ['code' => 'santri.read',       'module' => 'santri',     'action' => 'read',   'description' => 'Lihat data santri'],
+            ['code' => 'santri.update',     'module' => 'santri',     'action' => 'update', 'description' => 'Edit data santri'],
+            ['code' => 'santri.delete',     'module' => 'santri',     'action' => 'delete', 'description' => 'Hapus data santri'],
         ];
-        
-        foreach ($permissions as $perm) {
-            $exists = $this->db->table('permissions')
-                ->where('kode', $perm['kode'])
-                ->get()
-                ->getRow();
-            
+        $cnt = 0;
+        foreach ($permissions as $p) { if ($insertIfNotExists('permissions', 'code', $p)) $cnt++; }
+        echo "✅ Seeded: {$cnt} new Permissions\n";
+
+        // 3. SEED USERS (Password: Admin123! & Guru123!)
+        $adminPass = password_hash('Admin123!', PASSWORD_DEFAULT);
+        $guruPass  = password_hash('Guru123!', PASSWORD_DEFAULT);
+
+        $users = [
+            ['username' => 'superadmin', 'email' => 'superadmin@syiar.id', 'password' => $adminPass, 'nama_lengkap' => 'Administrator Utama', 'is_active' => 1],
+            ['username' => 'guru1',      'email' => 'guru1@syiar.id',      'password' => $guruPass,  'nama_lengkap' => 'Guru Contoh', 'is_active' => 1],
+        ];
+        $cnt = 0;
+        foreach ($users as $u) { if ($insertIfNotExists('users', 'username', $u)) $cnt++; }
+        echo "✅ Seeded: {$cnt} new Users\n";
+
+        // 4. MAP USERS TO ROLES
+        $userRoles = [
+            ['user_id' => 1, 'role_id' => 1],
+            ['user_id' => 2, 'role_id' => 3],
+        ];
+        $cnt = 0;
+        foreach ($userRoles as $ur) {
+            $exists = $this->db->table('user_roles')
+                ->where('user_id', $ur['user_id'])
+                ->where('role_id', $ur['role_id'])
+                ->get()->getRow();
+            if (!$exists) { $this->db->table('user_roles')->insert($ur); $cnt++; }
+        }
+        echo "✅ Seeded: {$cnt} new User-Role Mappings\n";
+
+        // 5. MAP SUPER_ADMIN TO ALL PERMISSIONS
+        $allPerms = $this->db->table('permissions')->select('id')->get()->getResultArray();
+        $cnt = 0;
+        foreach ($allPerms as $perm) {
+            $exists = $this->db->table('role_permissions')
+                ->where('role_id', 1)
+                ->where('permission_id', $perm['id'])
+                ->get()->getRow();
             if (!$exists) {
-                $this->db->table('permissions')->insert($perm);
-                echo "Permission '{$perm['kode']}' ditambahkan\n";
-            } else {
-                echo "Permission '{$perm['kode']}' sudah ada, skip\n";
+                $this->db->table('role_permissions')->insert(['role_id' => 1, 'permission_id' => $perm['id']]);
+                $cnt++;
             }
         }
-        
-        // Assign semua permission ke super_admin (role_id = 1)
-        $superAdminRole = $this->db->table('roles')
-            ->where('nama_role', 'super_admin')
-            ->get()
-            ->getRow();
-        
-        if ($superAdminRole) {
-            $allPermissions = $this->db->table('permissions')->get()->getResult();
-            
-            foreach ($allPermissions as $perm) {
-                $exists = $this->db->table('role_permissions')
-                    ->where('role_id', $superAdminRole->id)
-                    ->where('permission_id', $perm->id)
-                    ->get()
-                    ->getRow();
-                
-                if (!$exists) {
-                    $this->db->table('role_permissions')->insert([
-                        'role_id' => $superAdminRole->id,
-                        'permission_id' => $perm->id
-                    ]);
-                }
-            }
-            echo "Permission assigned to super_admin\n";
-        }
-        
-        // Buat user superadmin jika belum ada
-        $userExists = $this->db->table('users')
-            ->where('username', 'superadmin')
-            ->get()
-            ->getRow();
-        
-        if (!$userExists) {
-            $this->db->table('users')->insert([
-                'username' => 'superadmin',
-                'email' => 'admin@syiar.com',
-                'password_hash' => password_hash('Admin123!', PASSWORD_DEFAULT),
-                'nama_lengkap' => 'Super Administrator',
-                'is_active' => 1,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-            ]);
-            
-            $userId = $this->db->insertID();
-            
-            // Assign role super_admin ke user
-            if ($superAdminRole) {
-                $this->db->table('user_roles')->insert([
-                    'user_id' => $userId,
-                    'role_id' => $superAdminRole->id
-                ]);
-            }
-            echo "User superadmin created\n";
-        } else {
-            echo "User superadmin already exists, skip\n";
-        }
-        
-        echo "Seeding completed!\n";
+        echo "✅ Seeded: {$cnt} new Role-Permission Mappings\n";
     }
 }

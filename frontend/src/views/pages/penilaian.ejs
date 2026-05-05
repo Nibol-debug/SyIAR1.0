@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/penilaian'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-on-surface mb-2"><%= title %></h1>
+        <p class="text-sm text-slate-500">Sistem penilaian santri Al-Azhar Rumah Gemilang</p>
+    </div>
+
+    <!-- Flash Messages -->
+    <% if (typeof error !== 'undefined' && error && error.length) { %>
+    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center gap-2">
+        <span class="material-symbols-outlined text-lg">error</span>
+        <%= error %>
+    </div>
+    <% } %>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Input Penilaian -->
+        <a href="/penilaian/input" class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all group hover:border-primary/30">
+            <div class="flex items-center gap-4 mb-3">
+                <div class="p-3 bg-emerald-100 rounded-xl group-hover:bg-emerald-200 transition">
+                    <span class="material-symbols-outlined text-3xl text-emerald-600">edit_note</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-on-surface">Input Penilaian</h3>
+                    <p class="text-sm text-slate-500">Input nilai santri per aspek</p>
+                </div>
+            </div>
+            <div class="flex items-center text-emerald-600 text-sm font-medium">
+                Mulai Input <span class="material-symbols-outlined text-lg ml-1">arrow_forward</span>
+            </div>
+        </a>
+
+        <!-- Rekap Penilaian -->
+        <a href="/penilaian/rekap" class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all group hover:border-primary/30">
+            <div class="flex items-center gap-4 mb-3">
+                <div class="p-3 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition">
+                    <span class="material-symbols-outlined text-3xl text-blue-600">leaderboard</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-on-surface">Rekap Penilaian</h3>
+                    <p class="text-sm text-slate-500">Lihat rekap nilai per kelas & periode</p>
+                </div>
+            </div>
+            <div class="flex items-center text-blue-600 text-sm font-medium">
+                Lihat Rekap <span class="material-symbols-outlined text-lg ml-1">arrow_forward</span>
+            </div>
+        </a>
+
+        <!-- Export -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 opacity-60">
+            <div class="flex items-center gap-4 mb-3">
+                <div class="p-3 bg-purple-100 rounded-xl">
+                    <span class="material-symbols-outlined text-3xl text-purple-600">download</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-on-surface">Export Laporan</h3>
+                    <p class="text-sm text-slate-500">Export data nilai ke Excel</p>
+                </div>
+            </div>
+            <div class="flex items-center text-slate-400 text-sm font-medium">
+                Segera Hadir <span class="material-symbols-outlined text-lg ml-1">schedule</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kategori Penilaian Info -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 class="font-bold text-lg text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">category</span>
+            Kategori Penilaian
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <% if (typeof kategori !== 'undefined' && kategori.length) { kategori.forEach(function(k) { %>
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background-color: <%= k.warna %>15">
+                <div class="w-3 h-3 rounded-full" style="background-color: <%= k.warna %>"></div>
+                <div>
+                    <span class="text-sm font-medium"><%= k.nama_kategori %></span>
+                    <p class="text-xs text-slate-500"><%= k.kode_kategori %></p>
+                </div>
+            </div>
+            <% }); } else { %>
+            <div class="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                <span class="text-sm font-medium">Akhlak & Karakter</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span class="text-sm font-medium">Tahfidz Al-Quran</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+                <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                <span class="text-sm font-medium">Akademik</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">
+                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                <span class="text-sm font-medium">Ekstrakurikuler</span>
+            </div>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

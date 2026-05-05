@@ -1,0 +1,53 @@
+<header class="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex justify-between items-center px-6 ml-64">
+    <div class="flex items-center gap-4">
+        <h2 class="text-lg font-bold text-on-surface"><%= typeof title !== 'undefined' ? title : '' %></h2>
+    </div>
+    <div class="flex items-center gap-3">
+        <button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-all">
+            <span class="material-symbols-outlined text-slate-500">notifications</span>
+        </button>
+        <a class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-red-50 transition-all text-slate-500 hover:text-red-600" href="/logout" title="Logout">
+            <span class="material-symbols-outlined">logout</span>
+        </a>
+    </div>
+</header>
+
+<!-- Flash Messages -->
+<% if (typeof success !== 'undefined' && success && success.length > 0) { %>
+<div class="ml-64 px-6 pt-4">
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-fade-in" id="flashSuccess">
+        <span class="material-symbols-outlined">check_circle</span>
+        <p class="text-sm flex-1"><%= success %></p>
+        <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+    </div>
+</div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+<div class="ml-64 px-6 pt-4">
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 animate-fade-in" id="flashError">
+        <span class="material-symbols-outlined">error</span>
+        <p class="text-sm flex-1"><%= error %></p>
+        <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+    </div>
+</div>
+<% } %>
+
+<style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+</style>
+
+<script>
+    // Auto-dismiss flash messages after 8 seconds
+    setTimeout(() => {
+        ['flashSuccess', 'flashError'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.style.transition = 'opacity 0.5s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }
+        });
+    }, 8000);
+</script>

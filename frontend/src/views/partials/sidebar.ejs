@@ -1,0 +1,60 @@
+<aside class="fixed left-0 top-0 h-screen w-64 border-r border-slate-200 bg-white flex flex-col py-6 z-50">
+    <div class="px-6 mb-8 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-white">
+            <span class="material-symbols-outlined">school</span>
+        </div>
+        <div>
+            <h1 class="text-lg font-bold text-primary leading-none">SyIAR Gemilang</h1>
+            <p class="text-[10px] text-slate-500 font-medium">Al-Azhar Rumah Gemilang</p>
+        </div>
+    </div>
+    
+    <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+        <% const currentPath = typeof _currentPath !== 'undefined' ? _currentPath : ''; %>
+        
+        <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath === '/dashboard' ? 'active' : 'text-slate-600' %>" href="/dashboard">
+            <span class="material-symbols-outlined text-xl">dashboard</span>
+            <span class="text-sm">Dashboard</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/santri') ? 'active' : 'text-slate-600' %>" href="/santri">
+            <span class="material-symbols-outlined text-xl">group</span>
+            <span class="text-sm">Data Santri</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/kelas') ? 'active' : 'text-slate-600' %>" href="/kelas">
+            <span class="material-symbols-outlined text-xl">class</span>
+            <span class="text-sm">Kelas</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/penilaian') ? 'active' : 'text-slate-600' %>" href="/penilaian">
+            <span class="material-symbols-outlined text-xl">assignment_turned_in</span>
+            <span class="text-sm">Penilaian</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/ppdb') ? 'active' : 'text-slate-600' %>" href="/ppdb">
+            <span class="material-symbols-outlined text-xl">person_add</span>
+            <span class="text-sm">PPDB</span>
+        </a>
+        
+        <% if (typeof user !== 'undefined' && user && (user.role === 'super_admin' || (Array.isArray(user.roles) && user.roles.some(r => r.slug === 'super_admin')))) { %>
+        <div class="pt-4 mt-4 border-t border-slate-100">
+            <p class="px-4 text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Admin</p>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/admin/roles') ? 'active' : 'text-slate-600' %>" href="/admin/roles">
+                <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+                <span class="text-sm">Role & Akses</span>
+            </a>
+        </div>
+        <% } %>
+    </nav>
+    
+    <div class="px-6 pt-4 border-t border-slate-100">
+        <% if (typeof user !== 'undefined' && user) { %>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-white font-bold text-sm">
+                <%= (user.nama_lengkap || user.username || 'A')[0].toUpperCase() %>
+            </div>
+            <div class="overflow-hidden flex-1">
+                <p class="text-sm font-bold truncate"><%= user.nama_lengkap || user.username %></p>
+                <p class="text-xs text-slate-500 truncate"><%= user.role || 'User' %></p>
+            </div>
+        </div>
+        <% } %>
+    </div>
+</aside>

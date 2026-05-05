@@ -9,10 +9,10 @@ class UserModel extends Model
     protected $table = 'users';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType = 'object';
+    protected $returnType = 'array';
     protected $useSoftDeletes = true;
     protected $protectFields = true;
-    protected $allowedFields = ['username', 'email', 'password_hash', 'nama_lengkap', 'is_active'];
+    protected $allowedFields = ['username', 'email', 'password', 'nama_lengkap', 'phone', 'avatar', 'is_active', 'last_login'];
     
     protected $useTimestamps = true;
     protected $dateFormat = 'datetime';
@@ -29,7 +29,7 @@ class UserModel extends Model
     public function getUserWithRoles($userId = null)
     {
         $builder = $this->db->table('users');
-        $builder->select('users.*, GROUP_CONCAT(roles.nama_role) as roles');
+        $builder->select('users.*, GROUP_CONCAT(roles.name) as roles');
         $builder->join('user_roles', 'user_roles.user_id = users.id', 'left');
         $builder->join('roles', 'roles.id = user_roles.role_id', 'left');
         

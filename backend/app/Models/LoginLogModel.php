@@ -8,22 +8,26 @@ class LoginLogModel extends Model
 {
     protected $table = 'login_logs';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['user_id', 'ip_address', 'user_agent', 'login_time', 'status'];
+    protected $allowedFields = [
+        'user_id', 'username', 'ip_address', 'user_agent',
+        'login_status', 'failure_reason', 'login_time', 'logout_time'
+    ];
     protected $useTimestamps = false;
     protected $skipValidation = true;
     
-    public function logAttempt($userId, $status, $request)
+    public function logAttempt($userId, $status, $request, $username = null, $reason = null)
     {
         try {
-            // Pastikan user_id valid (jika 0, set ke null)
             $validUserId = ($userId > 0) ? $userId : null;
             
             $data = [
-                'user_id' => $validUserId,
-                'ip_address' => $request->getIPAddress(),
-                'user_agent' => $request->getUserAgent()->getAgentString() ?: 'Unknown',
-                'login_time' => date('Y-m-d H:i:s'),
-                'status' => $status
+                'user_id'        => $validUserId,
+                'username'       => $username ?? 'unknown',
+                'ip_address'     => $request->getIPAddress(),
+                'user_agent'     => (string) $request->getUserAgent(),
+                'login_status'   => $status,
+                'failure_reason' => $reason,
+                'login_time'     => date('Y-m-d H:i:s'),
             ];
             
             return $this->insert($data);

@@ -3,26 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> - SyIAR Gemilang</title>
-    <link rel="stylesheet" href="/css/main.css">
+    <title><%= typeof title !== 'undefined' ? title : 'SyIAR Gemilang' %> - SyIAR Gemilang</title>
+    <link href="/css/main.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100">
+    <!-- Navbar -->
     <nav class="bg-teal-700 text-white shadow-lg">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
-                <a href="/" class="text-xl font-bold">SyIAR Gemilang</a>
-                <% if (user) { %>
+                <a href="/dashboard" class="text-xl font-bold hover:text-teal-200 transition">
+                    SyIAR Gemilang
+                </a>
+                
                 <div class="flex items-center gap-4">
-                    <span class="text-sm">Halo, <%= user.nama_lengkap %></span>
-                    <a href="/logout" class="bg-red-600 px-3 py-1 rounded hover:bg-red-700 transition text-sm">Logout</a>
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <span class="text-sm hidden md:inline">
+                            Halo, <%= user.nama_lengkap || user.username %>
+                        </span>
+                        <a href="/logout" 
+                           class="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition text-sm font-semibold">
+                            Logout
+                        </a>
+                    <% } else { %>
+                        <a href="/login" class="bg-teal-600 px-4 py-2 rounded hover:bg-teal-700 transition text-sm font-semibold">
+                            Login
+                        </a>
+                    <% } %>
                 </div>
-                <% } %>
             </div>
         </div>
     </nav>
     
+    <!-- Flash Messages -->
+    <div class="container mx-auto px-4 py-4">
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <%= success %>
+            </div>
+        <% } %>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <%= error %>
+            </div>
+        <% } %>
+    </div>
+    
+    <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
         <%- body %>
     </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2026 SyIAR Gemilang. All rights reserved.</p>
+            <p class="text-sm mt-2">Sistem Informasi Al-Azhar Rumah Gemilang</p>
+        </div>
+    </footer>
 </body>
 </html>

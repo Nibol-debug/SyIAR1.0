@@ -1,31 +1,279 @@
-<div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
-    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Login SyIAR Gemilang</h1>
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Login - SyIAR Gemilang</title>
     
-    <% if (error) { %>
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <%= error %>
-        </div>
-    <% } %>
+    <!-- Tailwind CSS CDN for immediate styling -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
-    <form method="POST" action="/login">
-        <div class="mb-4">
-            <label class="block text-gray-700 font-medium mb-2">Username / Email</label>
-            <input type="text" name="username" id="username" required 
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
-        </div>
-        
-        <div class="mb-6">
-            <label class="block text-gray-700 font-medium mb-2">Password</label>
-            <input type="password" name="password" id="password" required 
-                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
-        </div>
-        
-        <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700 transition duration-200 font-medium">
-            Login
-        </button>
-    </form>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     
-    <div class="mt-4 text-center text-xs text-gray-400">
-        Demo: superadmin / Admin123!
+    <!-- Tailwind Config -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#006c49",
+                        "primary-container": "#10b981",
+                        "primary-fixed": "#6ffbbe",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#00422b",
+                        secondary: "#55615a",
+                        "secondary-container": "#d9e6dd",
+                        tertiary: "#2b6954",
+                        background: "#f8f9ff",
+                        surface: "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#3c4a42",
+                        outline: "#6c7a71",
+                        error: "#ba1a1a",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "system-ui", "sans-serif"],
+                    },
+                    fontSize: {
+                        "display-sm": ["36px", {lineHeight: "1.2", fontWeight: "700"}],
+                        "headline-lg": ["30px", {lineHeight: "1.3", fontWeight: "600"}],
+                        "headline-md": ["24px", {lineHeight: "1.4", fontWeight: "600"}],
+                        "body-lg": ["18px", {lineHeight: "1.6", fontWeight: "400"}],
+                        "body-md": ["16px", {lineHeight: "1.5", fontWeight: "400"}],
+                        "label-md": ["14px", {lineHeight: "1.2", fontWeight: "500"}],
+                        "label-sm": ["12px", {lineHeight: "1.2", fontWeight: "600"}],
+                    }
+                },
+            },
+        }
+    </script>
+    
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e5eeff 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 108, 73, 0.15);
+        }
+        .login-button {
+            transition: all 0.3s ease;
+        }
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 108, 73, 0.3);
+        }
+        .login-button:active {
+            transform: translateY(0);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="font-sans text-on-surface min-h-screen flex items-center justify-center p-4">
+
+    <!-- Background Decorations -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-container/10 rounded-full blur-3xl"></div>
     </div>
-</div>
+
+    <!-- Main Login Container -->
+    <div class="relative w-full max-w-md animate-fade-in">
+        
+        <!-- Logo & Branding -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-primary-container rounded-2xl shadow-lg mb-4">
+                <span class="material-symbols-outlined text-5xl text-white">school</span>
+            </div>
+            <h1 class="font-headline-lg text-primary mb-2">SyIAR Gemilang</h1>
+            <p class="font-body-md text-slate-500">Sistem Informasi Al-Azhar Rumah Gemilang</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass-card rounded-3xl shadow-2xl p-8 border border-slate-200">
+            
+            <!-- Welcome Text -->
+            <div class="mb-6">
+                <h2 class="font-headline-md text-on-surface mb-2">Selamat Datang</h2>
+                <p class="font-body-md text-slate-500 text-sm">Silakan login untuk melanjutkan</p>
+            </div>
+
+            <!-- Error Message -->
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="mb-6 p-4 bg-error/10 border border-error/30 rounded-xl flex items-start gap-3 animate-fade-in">
+                    <span class="material-symbols-outlined text-error mt-0.5">error_circle</span>
+                    <p class="font-body-md text-error text-sm"><%= error %></p>
+                </div>
+            <% } %>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+                    <span class="material-symbols-outlined text-emerald-600 mt-0.5">check_circle</span>
+                    <p class="font-body-md text-emerald-700 text-sm"><%= success %></p>
+                </div>
+            <% } %>
+
+            <!-- Login Form -->
+            <form action="/login" method="POST" class="space-y-5" id="loginForm">
+                
+                <!-- Username Field -->
+                <div class="space-y-2">
+                    <label class="font-label-md text-on-surface flex items-center gap-2" for="username">
+                        <span class="material-symbols-outlined text-sm text-primary">person</span>
+                        Username
+                    </label>
+                    <div class="relative">
+                        <input 
+                            class="input-field w-full bg-surface border border-outline/30 rounded-xl px-4 py-3.5 pl-12 font-body-md text-on-surface placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            id="username"
+                            name="username"
+                            placeholder="Masukkan username"
+                            required=""
+                            type="text"
+                            value="<%= typeof username !== 'undefined' ? username : '' %>"
+                        />
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">person_outline</span>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="space-y-2">
+                    <label class="font-label-md text-on-surface flex items-center gap-2" for="password">
+                        <span class="material-symbols-outlined text-sm text-primary">lock</span>
+                        Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            class="input-field w-full bg-surface border border-outline/30 rounded-xl px-4 py-3.5 pl-12 pr-12 font-body-md text-on-surface placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                            id="password"
+                            name="password"
+                            placeholder="Masukkan password"
+                            required=""
+                            type="password"
+                        />
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">lock_outline</span>
+                        <button 
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                            onclick="togglePassword()"
+                            type="button"
+                        >
+                            <span class="material-symbols-outlined" id="toggleIcon">visibility_off</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input 
+                            class="w-4 h-4 rounded border-outline/30 text-primary focus:ring-primary/30 cursor-pointer"
+                            name="remember"
+                            type="checkbox"
+                        />
+                        <span class="font-body-md text-slate-600 group-hover:text-on-surface transition-colors">Ingat saya</span>
+                    </label>
+                    <a class="font-body-md text-primary hover:text-primary-container transition-colors" href="#">
+                        Lupa password?
+                    </a>
+                </div>
+
+                <!-- Login Button -->
+                <button 
+                    class="login-button w-full bg-primary text-white font-body-lg font-semibold py-4 rounded-xl shadow-lg hover:bg-primary/90 focus:outline-none focus:ring-4 focus:ring-primary/30 flex items-center justify-center gap-2"
+                    id="loginBtn"
+                    type="submit"
+                >
+                    <span>Masuk</span>
+                    <span class="material-symbols-outlined">login</span>
+                    <svg class="animate-spin h-5 w-5 hidden" id="loadingSpinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Demo Credentials -->
+            <div class="mt-6 pt-6 border-t border-slate-200">
+                <p class="font-label-sm text-slate-500 text-center mb-3">Demo Credentials:</p>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <span class="font-label-sm text-slate-600">Super Admin:</span>
+                        <span class="font-label-sm text-primary font-mono">superadmin / Admin123!</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <span class="font-label-sm text-slate-600">Guru:</span>
+                        <span class="font-label-sm text-primary font-mono">guru1 / Guru123!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center mt-6 font-label-sm text-slate-500">
+            © 2026 SyIAR Gemilang. All rights reserved.
+        </p>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = 'visibility';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.textContent = 'visibility_off';
+            }
+        }
+
+        // Show loading state on form submit
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const loginBtn = document.getElementById('loginBtn');
+            const spinner = document.getElementById('loadingSpinner');
+            const btnText = loginBtn.querySelector('span:first-child');
+            const btnIcon = loginBtn.querySelector('.material-symbols-outlined');
+            
+            loginBtn.disabled = true;
+            spinner.classList.remove('hidden');
+            btnText.textContent = 'Memproses...';
+            btnIcon.classList.add('hidden');
+        });
+
+        // Auto-hide error after 10 seconds
+        setTimeout(() => {
+            const errorDiv = document.querySelector('.bg-error\\/10');
+            if (errorDiv) {
+                errorDiv.style.transition = 'opacity 0.5s';
+                errorDiv.style.opacity = '0';
+                setTimeout(() => errorDiv.remove(), 500);
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

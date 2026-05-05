@@ -1,0 +1,26 @@
+✅ Middleware loaded
+✅ Routes loaded
+
+╔════════════════════════════════════════╗
+║   🚀 SyIAR Frontend Ready!            ║
+╠════════════════════════════════════════╣
+║   🌐 URL: http://localhost:3000
+║   📡 API:  http://localhost:8081/api
+║   🔧 Env:  development
+║   🕐 Time: 5/5/2026, 11.24.55
+╚════════════════════════════════════════╝
+    
+Login error: {
+  status: 401,
+  error: 401,
+  messages: { error: 'Username atau password salah' }
+}
+📋 Loading aspek for santri: 1
+📋 Aspek loaded: 12 items
+📋 Grouped into 4 categories
+📋 Loading aspek for santri: 1
+📋 Aspek loaded: 12 items
+📋 Grouped into 4 categories
+📋 Loading aspek for santri: 405
+📋 Aspek loaded: 12 items
+📋 Grouped into 4 categories

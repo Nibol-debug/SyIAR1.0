@@ -1,56 +1,97 @@
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Card Selamat Datang (sudah ada) -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold mb-2">Selamat Datang</h3>
-        <p class="text-gray-600"><%= user.nama_lengkap %></p>
-        <p class="text-gray-600 text-sm"><%= user.email %></p>
-    </div>
-    
-    <!-- Card Role (sudah ada) -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold mb-2">Role</h3>
-        <p class="text-gray-600"><%= user.roles ? user.roles.join(', ') : 'super_admin' %></p>
-    </div>
-    
-    <!-- Card Status (sudah ada) -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold mb-2">Status</h3>
-        <p class="text-green-600 font-semibold">✅ Aktif</p>
-    </div>
-</div>
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
 
-<!-- TAMBAHKAN CARD MENU AKSES CEPAT -->
-<div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-    <% if (user && user.roles && user.roles.includes('super_admin')) { %>
-        <a href="/admin/roles" class="bg-teal-100 hover:bg-teal-200 rounded-lg p-4 text-center transition">
-            <div class="text-2xl mb-2">🔐</div>
-            <div class="font-semibold">Manajemen Role</div>
-            <div class="text-xs text-gray-500">Atur hak akses pengguna</div>
+<% var _currentPath = '/dashboard'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-on-surface mb-2">Dashboard Overview</h2>
+        <p class="text-slate-500">Selamat datang kembali, <strong><%= user?.nama_lengkap || user?.username || 'Admin' %></strong>! Berikut ringkasan data terkini.</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2.5 bg-emerald-50 rounded-lg text-primary">
+                    <span class="material-symbols-outlined">group</span>
+                </div>
+                <span class="text-xs font-bold text-primary bg-emerald-50 px-2.5 py-1 rounded-full">Aktif</span>
+            </div>
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Total Santri</p>
+            <h3 class="text-3xl font-bold text-primary mt-1" id="statSantri">
+                <%= stats?.total_santri_aktif?.toLocaleString('id-ID') || '—' %>
+            </h3>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2.5 bg-blue-50 rounded-lg text-blue-600">
+                    <span class="material-symbols-outlined">class</span>
+                </div>
+                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">Active</span>
+            </div>
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Total Kelas</p>
+            <h3 class="text-3xl font-bold text-blue-600 mt-1"><%= stats?.total_kelas || '—' %></h3>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2.5 bg-amber-50 rounded-lg text-amber-600">
+                    <span class="material-symbols-outlined">grade</span>
+                </div>
+            </div>
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Rata-rata Nilai</p>
+            <h3 class="text-3xl font-bold text-amber-600 mt-1"><%= stats?.rata_rata_nilai || '—' %></h3>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-2.5 bg-purple-50 rounded-lg text-purple-600">
+                    <span class="material-symbols-outlined">assignment</span>
+                </div>
+            </div>
+            <p class="text-slate-500 text-xs uppercase tracking-wider">Penilaian Bulan Ini</p>
+            <h3 class="text-3xl font-bold text-purple-600 mt-1"><%= stats?.total_penilaian || '0' %></h3>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <a href="/santri/create" class="bg-primary text-white p-6 rounded-xl flex flex-col items-center justify-center gap-3 hover:opacity-90 transition-all shadow-lg hover:shadow-xl">
+            <span class="material-symbols-outlined text-3xl">person_add</span>
+            <span class="font-semibold">Tambah Santri</span>
         </a>
-    <% } %>
-    
-    <a href="#" class="bg-blue-100 hover:bg-blue-200 rounded-lg p-4 text-center transition">
-        <div class="text-2xl mb-2">👨‍🎓</div>
-        <div class="font-semibold">Manajemen Santri</div>
-        <div class="text-xs text-gray-500">Kelola data siswa</div>
-    </a>
-    
-    <a href="#" class="bg-green-100 hover:bg-green-200 rounded-lg p-4 text-center transition">
-        <div class="text-2xl mb-2">📝</div>
-        <div class="font-semibold">Penilaian</div>
-        <div class="text-xs text-gray-500">Input dan rekap nilai</div>
-    </a>
-    
-    <a href="#" class="bg-yellow-100 hover:bg-yellow-200 rounded-lg p-4 text-center transition">
-        <div class="text-2xl mb-2">💳</div>
-        <div class="font-semibold">Pembayaran</div>
-        <div class="text-xs text-gray-500">Kelola SPP</div>
-    </a>
-</div>
+        <a href="/penilaian" class="bg-white border border-slate-200 text-slate-700 p-6 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-slate-50 transition-all">
+            <span class="material-symbols-outlined text-3xl text-primary">edit_note</span>
+            <span class="font-semibold">Input Penilaian</span>
+        </a>
+        <a href="/santri" class="bg-white border border-slate-200 text-slate-700 p-6 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-slate-50 transition-all">
+            <span class="material-symbols-outlined text-3xl text-primary">list_alt</span>
+            <span class="font-semibold">Lihat Data Santri</span>
+        </a>
+    </div>
 
-<!-- Informasi Sistem (tetap) -->
-<div class="mt-6 bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-xl font-bold mb-4">Informasi Sistem</h2>
-    <p>Anda berhasil login ke Sistem Informasi Al-Azhar Rumah Gemilang (SyIAR).</p>
-    <p class="mt-2">Fitur yang tersedia akan muncul sesuai dengan role dan permission Anda.</p>
-</div>
+    <% if (stats?.santri_by_status && stats.santri_by_status.length > 0) { %>
+    <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 class="text-lg font-bold mb-4">Distribusi Status Santri</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <% stats.santri_by_status.forEach(s => { %>
+            <div class="text-center p-4 rounded-lg bg-slate-50">
+                <p class="text-2xl font-bold text-primary"><%= s.total %></p>
+                <p class="text-xs text-slate-500 uppercase mt-1"><%= s.status %></p>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+    <% } %>
+</main>
+
+</body>
+</html>

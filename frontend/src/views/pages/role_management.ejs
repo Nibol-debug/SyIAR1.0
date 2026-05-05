@@ -1,146 +1,170 @@
-<div class="container mx-auto p-6">
-    <div class="bg-white rounded-lg shadow-lg p-6">
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/admin/roles'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-teal-700">Manajemen Role & Hak Akses</h2>
+            <div>
+                <h2 class="text-2xl font-bold text-on-surface">Manajemen Role & Hak Akses</h2>
+                <p class="text-sm text-slate-500 mt-1">Kelola role dan permission sistem</p>
+            </div>
             <button onclick="showAddRoleModal()" 
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">
-                + Tambah Role Baru
+                    class="px-4 py-2.5 bg-primary text-white rounded-lg hover:opacity-90 transition text-sm font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">add</span> Tambah Role
             </button>
         </div>
         
-        <% if (data.roles && data.roles.length > 0) { %>
-            <% data.roles.forEach(role => { %>
-                <div class="mb-10 p-4 border-2 border-gray-100 rounded-xl">
+        <% if (typeof roles !== 'undefined' && roles.length > 0) { %>
+            <% roles.forEach(function(role) { %>
+                <div class="mb-8 p-5 border border-slate-200 rounded-xl hover:border-slate-300 transition">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-teal-600 uppercase">
-                            Role: <%= role.nama_role %>
-                            <span class="text-sm text-gray-400 ml-2">(<%= role.total_permissions || 0 %> permissions)</span>
+                        <h3 class="text-lg font-bold text-primary flex items-center gap-3">
+                            <span class="material-symbols-outlined">shield_person</span>
+                            <%= role.name %>
+                            <span class="text-xs text-slate-400 font-normal bg-slate-50 px-2 py-1 rounded-full ml-2"><%= role.total_permissions || 0 %> permissions</span>
                         </h3>
                         <div class="flex gap-2">
-                            <button onclick="editRole('<%= role.id %>', '<%= role.nama_role %>', '<%= role.deskripsi %>')" 
-                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
-                                Edit
+                            <% if (role.slug !== 'super_admin') { %>
+                            <button onclick="editRole('<%= role.id %>', '<%= role.name %>', '<%= role.description || '' %>')" 
+                                    class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-medium transition flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">edit</span> Edit
                             </button>
-                            <button onclick="deleteRole('<%= role.id %>', '<%= role.nama_role %>')" 
-                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
-                                Hapus
+                            <button onclick="deleteRole('<%= role.id %>', '<%= role.name %>')" 
+                                    class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-medium transition flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">delete</span> Hapus
                             </button>
+                            <% } %>
                         </div>
                     </div>
+                    <% if (role.description) { %>
+                    <p class="text-sm text-slate-500 mb-4"><%= role.description %></p>
+                    <% } %>
                     
-                    <form onsubmit="updateRole(event, '<%= role.id %>')" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <% data.all_permissions.forEach(perm => { %>
-                                <div class="flex items-center p-2 border rounded hover:bg-gray-50">
+                    <form onsubmit="updateRolePerms(event, '<%= role.id %>')" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <% if (typeof all_permissions !== 'undefined') all_permissions.forEach(function(perm) { %>
+                                <div class="flex items-center p-2.5 border border-slate-100 rounded-lg hover:bg-slate-50 transition">
                                     <input type="checkbox" 
                                            name="perms_<%= role.id %>" 
                                            value="<%= perm.id %>" 
                                            id="perm_<%= role.id %>_<%= perm.id %>"
-                                           class="w-4 h-4 text-teal-600 rounded">
-                                    <label for="perm_<%= role.id %>_<%= perm.id %>" class="ml-3 cursor-pointer">
-                                        <span class="block text-sm font-medium text-gray-700"><%= perm.kode %></span>
-                                        <span class="text-xs text-gray-400"><%= perm.deskripsi %></span>
+                                           class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary/30">
+                                    <label for="perm_<%= role.id %>_<%= perm.id %>" class="ml-3 cursor-pointer flex-1">
+                                        <span class="block text-xs font-semibold text-slate-700"><%= perm.code %></span>
+                                        <span class="text-[10px] text-slate-400"><%= perm.description || '' %></span>
                                     </label>
                                 </div>
-                            <% }) %>
+                            <% }); %>
                         </div>
-
-                        <div class="mt-4">
-                            <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded text-sm font-semibold shadow-md">
-                                Simpan Akses <%= role.nama_role %>
+                        <div class="mt-4 flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-primary hover:opacity-90 text-white rounded-lg text-sm font-medium transition flex items-center gap-2">
+                                <span class="material-symbols-outlined text-lg">save</span>
+                                Simpan Akses
                             </button>
                         </div>
                     </form>
                 </div>
-            <% }) %>
+            <% }); %>
         <% } else { %>
-            <p class="text-gray-500">Belum ada data role.</p>
+            <div class="text-center py-12 text-slate-400">
+                <span class="material-symbols-outlined text-5xl mb-3">shield</span>
+                <p>Belum ada data role.</p>
+            </div>
         <% } %>
     </div>
-</div>
+</main>
 
-<div id="roleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl p-6 w-96">
-        <h3 id="modalTitle" class="text-xl font-bold mb-4">Tambah Role Baru</h3>
+<!-- Modal Add/Edit Role -->
+<div id="roleModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[60]">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md animate-fade-in">
+        <h3 id="modalTitle" class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">add_circle</span>
+            Tambah Role Baru
+        </h3>
         <input type="hidden" id="roleId">
         <div class="mb-4">
-            <label class="block text-gray-700 mb-2">Nama Role</label>
-            <input type="text" id="roleName" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Role</label>
+            <input type="text" id="roleName" placeholder="Contoh: Wali Kelas"
+                   class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none">
         </div>
-        <div class="mb-4">
-            <label class="block text-gray-700 mb-2">Deskripsi</label>
-            <textarea id="roleDesc" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi</label>
+            <textarea id="roleDesc" rows="3" placeholder="Deskripsi tugas dan tanggung jawab role..."
+                      class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"></textarea>
         </div>
         <div class="flex justify-end gap-2">
-            <button onclick="closeModal()" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
-            <button onclick="saveRole()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">Simpan</button>
+            <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition text-sm font-medium">Batal</button>
+            <button onclick="saveRole()" class="px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition text-sm font-medium">Simpan</button>
         </div>
     </div>
 </div>
 
+<style>
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+</style>
+
 <script>
-    const API_URL = 'http://localhost:8080/api';
-    const TOKEN = '<%- token %>';
+    const API_URL = '<%= typeof process !== "undefined" ? "http://localhost:8081/api" : "http://localhost:8081/api" %>';
+    const TOKEN = '<%= typeof token !== "undefined" ? token : "" %>';
     
-    console.log('Token available:', TOKEN ? 'YES' : 'NO');
-    console.log('API_URL:', API_URL);
-    
+    // Load existing role permissions on page load
     async function loadRolePermissions(roleId) {
         try {
             const response = await fetch(API_URL + '/roles/' + roleId + '/permissions', {
                 headers: { 'Authorization': 'Bearer ' + TOKEN }
             });
-            const permIds = await response.json();
+            const result = await response.json();
+            const permIds = result.data || [];
             
             permIds.forEach(function(permId) {
                 var checkbox = document.querySelector('input[name="perms_' + roleId + '"][value="' + permId + '"]');
                 if (checkbox) checkbox.checked = true;
             });
         } catch (error) {
-            console.error('Failed to load permissions:', error);
+            console.error('Failed to load permissions for role ' + roleId + ':', error);
         }
     }
     
     document.addEventListener('DOMContentLoaded', function() {
-        <% data.roles.forEach(function(role) { %>
+        <% if (typeof roles !== 'undefined') roles.forEach(function(role) { %>
             loadRolePermissions('<%= role.id %>');
         <% }); %>
     });
     
-    async function updateRole(event, roleId) {
+    async function updateRolePerms(event, roleId) {
         event.preventDefault();
-        
         var checkboxes = document.querySelectorAll('input[name="perms_' + roleId + '"]:checked');
-        var selectedPerms = [];
-        checkboxes.forEach(function(cb) {
-            selectedPerms.push(cb.value);
-        });
+        var selectedPerms = Array.from(checkboxes).map(cb => cb.value);
         
         try {
             var response = await fetch(API_URL + '/roles/update-permission/' + roleId, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + TOKEN
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
                 body: JSON.stringify({ permissions: selectedPerms })
             });
-            
             var result = await response.json();
-            
-            if(response.ok) {
-                alert('Berhasil! Hak akses role telah diperbarui.');
+            if (response.ok) {
+                alert('✅ Hak akses berhasil diperbarui!');
+                location.reload();
             } else {
-                alert('Gagal: ' + (result.message || 'Unknown error'));
+                alert('❌ Gagal: ' + (result.message || 'Unknown error'));
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Gagal menyambung ke server API: ' + error.message);
+            alert('❌ Gagal menyambung ke server: ' + error.message);
         }
     }
     
     function showAddRoleModal() {
-        document.getElementById('modalTitle').innerText = 'Tambah Role Baru';
+        document.getElementById('modalTitle').innerHTML = '<span class="material-symbols-outlined text-primary">add_circle</span> Tambah Role Baru';
         document.getElementById('roleId').value = '';
         document.getElementById('roleName').value = '';
         document.getElementById('roleDesc').value = '';
@@ -149,7 +173,7 @@
     }
     
     function editRole(id, name, desc) {
-        document.getElementById('modalTitle').innerText = 'Edit Role';
+        document.getElementById('modalTitle').innerHTML = '<span class="material-symbols-outlined text-amber-500">edit</span> Edit Role';
         document.getElementById('roleId').value = id;
         document.getElementById('roleName').value = name;
         document.getElementById('roleDesc').value = desc || '';
@@ -164,64 +188,52 @@
     
     async function saveRole() {
         var id = document.getElementById('roleId').value;
-        var nama_role = document.getElementById('roleName').value;
-        var deskripsi = document.getElementById('roleDesc').value;
+        var name = document.getElementById('roleName').value;
+        var description = document.getElementById('roleDesc').value;
         
-        if (!nama_role) {
-            alert('Nama role wajib diisi');
-            return;
-        }
+        if (!name) { alert('Nama role wajib diisi'); return; }
         
         var url = id ? API_URL + '/roles/' + id : API_URL + '/roles';
         var method = id ? 'PUT' : 'POST';
         
-        console.log('Saving role:', { url: url, method: method, nama_role: nama_role, deskripsi: deskripsi });
-        
         try {
             var response = await fetch(url, {
                 method: method,
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + TOKEN
-                },
-                body: JSON.stringify({ nama_role: nama_role, deskripsi: deskripsi })
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+                body: JSON.stringify({ name, description })
             });
-            
             var result = await response.json();
-            console.log('Response:', result);
-            
-            if(response.ok) {
-                alert(result.message);
+            if (response.ok) {
+                alert('✅ ' + (result.message || 'Berhasil'));
                 location.reload();
             } else {
-                alert('Gagal: ' + JSON.stringify(result));
+                alert('❌ Gagal: ' + JSON.stringify(result));
             }
         } catch (error) {
-            console.error('Error saving role:', error);
-            alert('Gagal menyambung ke server API: ' + error.message);
+            alert('❌ Gagal menyambung ke server: ' + error.message);
         }
     }
     
     async function deleteRole(id, name) {
-        if(confirm('Hapus role "' + name + '"?')) {
+        if (confirm('Hapus role "' + name + '"?')) {
             try {
                 var response = await fetch(API_URL + '/roles/' + id, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + TOKEN }
                 });
-                
                 var result = await response.json();
-                
-                if(response.ok) {
-                    alert(result.message);
+                if (response.ok) {
+                    alert('✅ ' + (result.message || 'Berhasil dihapus'));
                     location.reload();
                 } else {
-                    alert('Gagal: ' + (result.message || 'Unknown error'));
+                    alert('❌ ' + (result.message || 'Gagal menghapus'));
                 }
             } catch (error) {
-                console.error('Error deleting role:', error);
-                alert('Gagal menyambung ke server API: ' + error.message);
+                alert('❌ Gagal menyambung ke server: ' + error.message);
             }
         }
     }
 </script>
+
+</body>
+</html>

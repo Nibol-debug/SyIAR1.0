@@ -1,0 +1,38 @@
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title><%= typeof title !== 'undefined' ? title : 'SyIAR Gemilang' %> - SyIAR Gemilang</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#006c49",
+                        "primary-container": "#10b981",
+                        "on-primary": "#ffffff",
+                        secondary: "#55615a",
+                        background: "#f8f9ff",
+                        surface: "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#3c4a42",
+                        outline: "#6c7a71",
+                        error: "#ba1a1a",
+                    },
+                    fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; }
+        .material-symbols-filled { font-variation-settings: 'FILL' 1, 'wght' 400; }
+        body { background-color: #f8f9ff; }
+        .sidebar-link { transition: all 0.15s ease; }
+        .sidebar-link:hover { background: #f1f5f9; color: #006c49; }
+        .sidebar-link.active { background: rgba(16,185,129,0.08); color: #006c49; border-left: 4px solid #006c49; font-weight: 600; }
+    </style>

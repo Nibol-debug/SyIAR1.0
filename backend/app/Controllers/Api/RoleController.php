@@ -25,20 +25,27 @@ class RoleController extends BaseController
             ->groupBy('roles.id')
             ->orderBy('roles.id', 'ASC')
             ->get()
-            ->getResult();
+            ->getResultArray();
         
-        return $this->respond($roles);
+        return $this->respond([
+            'success' => true,
+            'data'    => $roles
+        ]);
     }
     
     // GET /api/roles/permissions
     public function getPermissions()
     {
         $permissions = $this->db->table('permissions')
-            ->orderBy('modul', 'ASC')
+            ->orderBy('module', 'ASC')
+            ->orderBy('action', 'ASC')
             ->get()
-            ->getResult();
+            ->getResultArray();
         
-        return $this->respond($permissions);
+        return $this->respond([
+            'success' => true,
+            'data'    => $permissions
+        ]);
     }
     
     // GET /api/roles/{id}/permissions
@@ -48,79 +55,91 @@ class RoleController extends BaseController
             ->select('permission_id')
             ->where('role_id', $roleId)
             ->get()
-            ->getResult();
+            ->getResultArray();
         
         $permIds = array_column($permissions, 'permission_id');
         
-        return $this->respond($permIds);
+        return $this->respond([
+            'success' => true,
+            'data'    => $permIds
+        ]);
     }
     
     // POST /api/roles
     public function create()
     {
-        $nama_role = $this->request->getVar('nama_role');
-        $deskripsi = $this->request->getVar('deskripsi');
+        $json = $this->request->getJSON(true);
+        $name = $json['name'] ?? $this->request->getVar('name');
+        $description = $json['description'] ?? $this->request->getVar('description');
         
-        if (!$nama_role) {
+        if (!$name) {
             return $this->fail('Nama role wajib diisi', 400);
         }
         
+        // Generate slug from name
+        $slug = strtolower(str_replace(' ', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $name)));
+        
         $exists = $this->db->table('roles')
-            ->where('nama_role', $nama_role)
+            ->where('slug', $slug)
             ->get()
             ->getRow();
         
         if ($exists) {
-            return $this->fail('Role "' . $nama_role . '" sudah ada', 400);
+            return $this->fail('Role "' . $name . '" sudah ada', 400);
         }
         
         $data = [
-            'nama_role' => $nama_role,
-            'deskripsi' => $deskripsi,
-            'created_at' => date('Y-m-d H:i:s')
+            'name'        => $name,
+            'slug'        => $slug,
+            'description' => $description,
+            'is_active'   => 1,
+            'created_at'  => date('Y-m-d H:i:s')
         ];
         
         $this->db->table('roles')->insert($data);
         $newId = $this->db->insertID();
         
         return $this->respondCreated([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Role berhasil ditambahkan',
-            'id' => $newId,
-            'role' => $data
+            'data'    => ['id' => $newId, 'role' => $data]
         ]);
     }
     
     // PUT /api/roles/{id}
     public function update($id)
     {
-        $nama_role = $this->request->getVar('nama_role');
-        $deskripsi = $this->request->getVar('deskripsi');
+        $json = $this->request->getJSON(true);
+        $name = $json['name'] ?? $this->request->getVar('name');
+        $description = $json['description'] ?? $this->request->getVar('description');
         
-        if (!$nama_role) {
+        if (!$name) {
             return $this->fail('Nama role wajib diisi', 400);
         }
         
+        $slug = strtolower(str_replace(' ', '_', preg_replace('/[^a-zA-Z0-9\s]/', '', $name)));
+        
         $exists = $this->db->table('roles')
-            ->where('nama_role', $nama_role)
+            ->where('slug', $slug)
             ->where('id !=', $id)
             ->get()
             ->getRow();
         
         if ($exists) {
-            return $this->fail('Role "' . $nama_role . '" sudah digunakan oleh role lain', 400);
+            return $this->fail('Role "' . $name . '" sudah digunakan oleh role lain', 400);
         }
         
         $data = [
-            'nama_role' => $nama_role,
-            'deskripsi' => $deskripsi,
-            'updated_at' => date('Y-m-d H:i:s')
+            'name'        => $name,
+            'slug'        => $slug,
+            'description' => $description,
+            'updated_at'  => date('Y-m-d H:i:s')
         ];
         
         $this->db->table('roles')->where('id', $id)->update($data);
         
         return $this->respond([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Role berhasil diupdate'
         ]);
     }
@@ -130,7 +149,11 @@ class RoleController extends BaseController
     {
         $role = $this->db->table('roles')->where('id', $id)->get()->getRow();
         
-        if ($role && $role->nama_role === 'super_admin') {
+        if (!$role) {
+            return $this->failNotFound('Role tidak ditemukan');
+        }
+        
+        if ($role->slug === 'super_admin') {
             return $this->fail('Role super_admin tidak bisa dihapus', 400);
         }
         
@@ -146,7 +169,7 @@ class RoleController extends BaseController
         $this->db->table('roles')->where('id', $id)->delete();
         
         return $this->respond([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Role berhasil dihapus'
         ]);
     }
@@ -161,13 +184,13 @@ class RoleController extends BaseController
         
         foreach ($permissions as $permId) {
             $this->db->table('role_permissions')->insert([
-                'role_id' => $roleId,
+                'role_id'       => $roleId,
                 'permission_id' => $permId
             ]);
         }
         
         return $this->respond([
-            'status' => 'success',
+            'success' => true,
             'message' => 'Permissions updated successfully'
         ]);
     }

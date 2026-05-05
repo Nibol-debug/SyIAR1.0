@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/penilaian'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="mb-6">
+        <a href="/penilaian" class="text-sm text-slate-500 hover:text-primary flex items-center gap-1 mb-4">
+            <span class="material-symbols-outlined text-lg">arrow_back</span> Kembali ke Penilaian
+        </a>
+        <h1 class="text-2xl font-bold text-on-surface">Input Penilaian Santri</h1>
+        <p class="text-sm text-slate-500 mt-1">Pilih santri dan isi nilai berdasarkan aspek penilaian</p>
+    </div>
+
+    <!-- Step 1: Pilih Kelas & Santri -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h2 class="font-bold text-lg text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">person_search</span>
+            Pilih Santri
+        </h2>
+        <div class="flex gap-4 items-end flex-wrap">
+            <div class="flex-1 min-w-[200px]">
+                <label class="text-xs text-slate-500 font-medium mb-1 block">Kelas</label>
+                <select id="selectKelas" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <option value="">-- Pilih Kelas --</option>
+                    <% if (typeof kelas !== 'undefined' && kelas.length) { kelas.forEach(function(k) { %>
+                        <option value="<%= k.id %>" <%= (typeof selectedKelasId !== 'undefined' && selectedKelasId == k.id) ? 'selected' : '' %>><%= k.nama_kelas %> - <%= k.jurusan %></option>
+                    <% }); } %>
+                </select>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label class="text-xs text-slate-500 font-medium mb-1 block">Santri</label>
+                <select id="selectSantri" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" disabled>
+                    <option value="">-- Pilih Kelas Dulu --</option>
+                    <% if (typeof santriList !== 'undefined' && santriList.length) { santriList.forEach(function(s) { %>
+                        <option value="<%= s.id %>" <%= (typeof selectedSantriId !== 'undefined' && selectedSantriId == s.id) ? 'selected' : '' %>><%= s.nis %> - <%= s.nama_lengkap %></option>
+                    <% }); } %>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-slate-500 font-medium mb-1 block">Periode</label>
+                <input type="month" id="inputPeriode" value="<%= typeof periode !== 'undefined' ? periode : new Date().toISOString().slice(0,7) %>" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Form Penilaian (loads dynamically) -->
+    <div id="formContainer" class="<%= (typeof aspekGrouped !== 'undefined' && Object.keys(aspekGrouped).length) ? '' : 'hidden' %>">
+        <form id="formPenilaian" method="POST" action="/penilaian/input/submit">
+            <input type="hidden" name="santri_id" id="hiddenSantriId" value="<%= typeof selectedSantriId !== 'undefined' ? selectedSantriId : '' %>">
+            <input type="hidden" name="periode" id="hiddenPeriode" value="<%= typeof periode !== 'undefined' ? periode : new Date().toISOString().slice(0,7) %>">
+
+            <% if (typeof aspekGrouped !== 'undefined' && Object.keys(aspekGrouped).length) { %>
+                <% Object.keys(aspekGrouped).forEach(function(kategori, idx) { %>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-4">
+                    <h3 class="font-bold text-lg text-on-surface mb-4 flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background-color: <%= aspekGrouped[kategori].warna || '#3b82f6' %>"></div>
+                        <%= kategori %>
+                    </h3>
+                    <div class="space-y-4">
+                        <% aspekGrouped[kategori].aspek.forEach(function(a) { %>
+                        <div class="flex items-center gap-4 p-3 bg-slate-50/70 rounded-lg">
+                            <div class="flex-1 min-w-[180px]">
+                                <p class="text-sm font-medium text-on-surface"><%= a.nama_aspek %></p>
+                                <p class="text-xs text-slate-400"><%= a.kode_aspek %> &middot; Bobot: <%= a.bobot %> &middot; Skala: <%= a.skala_min %>-<%= a.skala_max %></p>
+                            </div>
+                            <div class="flex items-center gap-3 min-w-[220px]">
+                                <% if (a.tipe_input === 'range') { %>
+                                    <input type="range" name="values[<%= a.id %>]" min="<%= a.skala_min %>" max="<%= a.skala_max %>" value="<%= a.existingValue || Math.round((parseFloat(a.skala_max) + parseFloat(a.skala_min))/2) %>"
+                                        class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                                        oninput="this.nextElementSibling.textContent = this.value">
+                                    <span class="text-sm font-mono font-bold text-primary w-10 text-center"><%= a.existingValue || Math.round((parseFloat(a.skala_max) + parseFloat(a.skala_min))/2) %></span>
+                                <% } else if (a.tipe_input === 'select' && a.options) { %>
+                                    <select name="values[<%= a.id %>]" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                        <% var opts = typeof a.options === 'string' ? JSON.parse(a.options) : a.options; %>
+                                        <% Object.keys(opts).forEach(function(key) { %>
+                                            <option value="<%= key %>" <%= (a.existingValue == key) ? 'selected' : '' %>><%= opts[key] %> (<%= key %>)</option>
+                                        <% }); %>
+                                    </select>
+                                <% } else { %>
+                                    <input type="number" name="values[<%= a.id %>]" min="<%= a.skala_min %>" max="<%= a.skala_max %>" step="0.01"
+                                        value="<%= a.existingValue || '' %>" placeholder="0 - <%= a.skala_max %>"
+                                        class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                <% } %>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                </div>
+                <% }); %>
+
+                <!-- Keterangan & Submit -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-4">
+                    <label class="text-sm font-medium text-on-surface mb-2 block">Keterangan (Opsional)</label>
+                    <textarea name="keterangan" rows="3" placeholder="Catatan tambahan untuk penilaian ini..."
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"></textarea>
+                </div>
+
+                <div class="flex gap-3 mb-8">
+                    <button type="submit" name="is_draft" value="false"
+                        class="px-6 py-3 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary/90 transition flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">save</span>
+                        Simpan Penilaian
+                    </button>
+                    <button type="submit" name="is_draft" value="true"
+                        class="px-6 py-3 bg-slate-100 text-slate-600 rounded-lg font-medium text-sm hover:bg-slate-200 transition flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">drafts</span>
+                        Simpan Draft
+                    </button>
+                </div>
+            <% } %>
+        </form>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="<%= (typeof aspekGrouped !== 'undefined' && Object.keys(aspekGrouped).length) ? 'hidden' : '' %>">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center text-slate-400">
+            <span class="material-symbols-outlined text-5xl mb-3">edit_note</span>
+            <p class="text-lg font-medium mb-1">Pilih Santri untuk Mulai Input Nilai</p>
+            <p class="text-sm">Pilih kelas dan santri di atas, lalu form penilaian akan muncul.</p>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <% if (typeof success !== 'undefined' && success && success.length) { %>
+    <div class="fixed bottom-6 right-6 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 z-50 animate-bounce" id="successToast">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span class="text-sm font-medium"><%= success %></span>
+    </div>
+    <script>setTimeout(function(){ document.getElementById('successToast')?.remove(); }, 4000);</script>
+    <% } %>
+</main>
+
+<script>
+const API_TOKEN = '<%= typeof token !== 'undefined' ? token : '' %>';
+const API_BASE = '<%= process.env.API_BASE_URL || "http://localhost:8081/api" %>';
+
+// Fetch santri list when kelas changes
+document.getElementById('selectKelas').addEventListener('change', async function() {
+    const kelasId = this.value;
+    const santriSelect = document.getElementById('selectSantri');
+    
+    if (!kelasId) {
+        santriSelect.innerHTML = '<option value="">-- Pilih Kelas Dulu --</option>';
+        santriSelect.disabled = true;
+        return;
+    }
+    
+    santriSelect.innerHTML = '<option value="">Memuat...</option>';
+    santriSelect.disabled = true;
+    
+    try {
+        const res = await fetch(API_BASE + '/santri?kelas_id=' + kelasId, {
+            headers: { 'Authorization': 'Bearer ' + API_TOKEN, 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        const list = data.data || [];
+        
+        if (list.length === 0) {
+            santriSelect.innerHTML = '<option value="">Tidak ada santri di kelas ini</option>';
+        } else {
+            santriSelect.innerHTML = '<option value="">-- Pilih Santri --</option>';
+            list.forEach(function(s) {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = (s.nis || '-') + ' - ' + s.nama_lengkap;
+                santriSelect.appendChild(opt);
+            });
+            santriSelect.disabled = false;
+        }
+    } catch (err) {
+        santriSelect.innerHTML = '<option value="">Error memuat data</option>';
+        console.error('Error loading santri:', err);
+    }
+});
+
+// When santri selected, redirect to load the form
+document.getElementById('selectSantri').addEventListener('change', function() {
+    const santriId = this.value;
+    const kelasId = document.getElementById('selectKelas').value;
+    const periode = document.getElementById('inputPeriode').value;
+    
+    if (santriId) {
+        window.location.href = '/penilaian/input?santri_id=' + santriId + '&kelas_id=' + kelasId + '&periode=' + periode;
+    }
+});
+
+// If kelas already selected on page load, enable santri dropdown
+(function() {
+    const kelasSelect = document.getElementById('selectKelas');
+    const santriSelect = document.getElementById('selectSantri');
+    if (kelasSelect.value && santriSelect.querySelector('option[value]:not([value=""])')) {
+        santriSelect.disabled = false;
+    }
+})();
+</script>
+
+</body>
+</html>
