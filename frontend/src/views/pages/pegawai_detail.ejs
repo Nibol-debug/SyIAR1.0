@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/pegawai'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <a href="/pegawai" class="text-sm text-slate-500 hover:text-primary flex items-center gap-1 mb-4">
+        <span class="material-symbols-outlined text-lg">arrow_back</span> Kembali
+    </a>
+
+    <!-- Header Card -->
+    <div class="bg-gradient-to-r from-primary to-indigo-500 rounded-xl p-6 mb-6 text-white">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold">
+                <%= (pegawai.nama_lengkap || '?')[0].toUpperCase() %>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold"><%= pegawai.nama_lengkap %></h1>
+                <p class="text-white/80"><%= pegawai.jabatan || '-' %> &middot; <%= pegawai.status_kepegawaian %></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-sm text-slate-500 uppercase mb-4">Data Pribadi</h3>
+            <div class="space-y-3">
+                <% [
+                    ['NIP', pegawai.nip],
+                    ['NUPTK', pegawai.nuptk],
+                    ['Jenis Kelamin', pegawai.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'],
+                    ['Tempat Lahir', pegawai.tempat_lahir],
+                    ['Tanggal Lahir', pegawai.tanggal_lahir],
+                    ['No Telepon', pegawai.no_telepon],
+                    ['Email', pegawai.email],
+                    ['Alamat', pegawai.alamat],
+                ].forEach(function(row) { %>
+                <div class="flex justify-between text-sm border-b border-slate-100 pb-2">
+                    <span class="text-slate-500"><%= row[0] %></span>
+                    <span class="font-medium text-right"><%= row[1] || '-' %></span>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-sm text-slate-500 uppercase mb-4">Data Kepegawaian</h3>
+            <div class="space-y-3">
+                <% [
+                    ['Status', pegawai.status_kepegawaian],
+                    ['Jabatan', pegawai.jabatan],
+                    ['Pendidikan', pegawai.pendidikan_terakhir],
+                    ['Gelar', pegawai.gelar],
+                    ['Universitas', pegawai.universitas],
+                    ['Tahun Lulus', pegawai.tahun_lulus],
+                    ['Tgl Bergabung', pegawai.tanggal_bergabung],
+                ].forEach(function(row) { %>
+                <div class="flex justify-between text-sm border-b border-slate-100 pb-2">
+                    <span class="text-slate-500"><%= row[0] %></span>
+                    <span class="font-medium text-right"><%= row[1] || '-' %></span>
+                </div>
+                <% }); %>
+            </div>
+
+            <% if (pegawai.mapel && pegawai.mapel.length > 0) { %>
+            <h3 class="font-bold text-sm text-slate-500 uppercase mt-6 mb-3">Mata Pelajaran</h3>
+            <div class="flex flex-wrap gap-2">
+                <% pegawai.mapel.forEach(function(m) { %>
+                <span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium"><%= m.nama_mapel %></span>
+                <% }); %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+</main>
+</body>
+</html>

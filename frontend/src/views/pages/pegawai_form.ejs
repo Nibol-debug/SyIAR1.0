@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/pegawai'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <a href="/pegawai" class="text-sm text-slate-500 hover:text-primary flex items-center gap-1 mb-4">
+            <span class="material-symbols-outlined text-lg">arrow_back</span> Kembali
+        </a>
+        <h1 class="text-2xl font-bold text-on-surface mb-6"><%= title %></h1>
+
+        <form action="/pegawai<%= mode === 'edit' ? '/' + pegawai.id : '' %>" method="POST">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Nama Lengkap *</label>
+                    <input type="text" name="nama_lengkap" value="<%= pegawai.nama_lengkap || '' %>" required
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Jenis Kelamin *</label>
+                    <select name="jenis_kelamin" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                        <option value="L" <%= pegawai.jenis_kelamin === 'L' ? 'selected' : '' %>>Laki-laki</option>
+                        <option value="P" <%= pegawai.jenis_kelamin === 'P' ? 'selected' : '' %>>Perempuan</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">NIP</label>
+                    <input type="text" name="nip" value="<%= pegawai.nip || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">NUPTK</label>
+                    <input type="text" name="nuptk" value="<%= pegawai.nuptk || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Status Kepegawaian *</label>
+                    <select name="status_kepegawaian" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                        <% ['Tetap', 'GTT', 'PTT', 'Honorer'].forEach(function(s) { %>
+                            <option value="<%= s %>" <%= pegawai.status_kepegawaian === s ? 'selected' : '' %>><%= s %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Jabatan</label>
+                    <input type="text" name="jabatan" value="<%= pegawai.jabatan || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Pendidikan Terakhir</label>
+                    <select name="pendidikan_terakhir" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                        <option value="">-- Pilih --</option>
+                        <% ['SMA', 'D3', 'S1', 'S2', 'S3'].forEach(function(p) { %>
+                            <option value="<%= p %>" <%= pegawai.pendidikan_terakhir === p ? 'selected' : '' %>><%= p %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Gelar</label>
+                    <input type="text" name="gelar" value="<%= pegawai.gelar || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Universitas</label>
+                    <input type="text" name="universitas" value="<%= pegawai.universitas || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Tanggal Bergabung</label>
+                    <input type="date" name="tanggal_bergabung" value="<%= pegawai.tanggal_bergabung || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">No Telepon</label>
+                    <input type="text" name="no_telepon" value="<%= pegawai.no_telepon || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Email</label>
+                    <input type="email" name="email" value="<%= pegawai.email || '' %>" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Alamat</label>
+                    <textarea name="alamat" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none"><%= pegawai.alamat || '' %></textarea>
+                </div>
+            </div>
+            <div class="mt-6">
+                <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary/90 transition flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">save</span> Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

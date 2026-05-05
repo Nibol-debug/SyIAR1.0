@@ -54,6 +54,7 @@
     <div id="formContainer" class="<%= (typeof aspekGrouped !== 'undefined' && Object.keys(aspekGrouped).length) ? '' : 'hidden' %>">
         <form id="formPenilaian" method="POST" action="/penilaian/input/submit">
             <input type="hidden" name="santri_id" id="hiddenSantriId" value="<%= typeof selectedSantriId !== 'undefined' ? selectedSantriId : '' %>">
+            <input type="hidden" name="kelas_id" id="hiddenKelasId" value="<%= typeof selectedKelasId !== 'undefined' ? selectedKelasId : '' %>">
             <input type="hidden" name="periode" id="hiddenPeriode" value="<%= typeof periode !== 'undefined' ? periode : new Date().toISOString().slice(0,7) %>">
 
             <% if (typeof aspekGrouped !== 'undefined' && Object.keys(aspekGrouped).length) { %>

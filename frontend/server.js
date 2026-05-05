@@ -75,13 +75,15 @@ try {
     permissionMiddleware.any = (perms) => (req, res, next) => next();
 }
 
-let santriRoutes, roleRoutes, kelasRoutes, penilaianRoutes, ppdbRoutes;
+let santriRoutes, roleRoutes, kelasRoutes, penilaianRoutes, ppdbRoutes, pegawaiRoutes, presensiRoutes;
 try {
     santriRoutes = require('./src/routes/santri');
     roleRoutes = require('./src/routes/roles');
     kelasRoutes = require('./src/routes/kelas');
     penilaianRoutes = require('./src/routes/penilaian');
     ppdbRoutes = require('./src/routes/ppdb');
+    pegawaiRoutes = require('./src/routes/pegawai');
+    presensiRoutes = require('./src/routes/presensi');
     console.log('✅ Routes loaded');
 } catch (err) {
     console.warn('⚠️  Route loading error:', err.message);
@@ -91,6 +93,8 @@ try {
     kelasRoutes = fallbackRouter();
     penilaianRoutes = fallbackRouter();
     ppdbRoutes = fallbackRouter();
+    pegawaiRoutes = fallbackRouter();
+    presensiRoutes = fallbackRouter();
 }
 
 // ============================================
@@ -200,6 +204,8 @@ app.use('/admin/roles', roleRoutes);
 app.use('/kelas', kelasRoutes);
 app.use('/penilaian', penilaianRoutes);
 app.use('/ppdb', ppdbRoutes);
+app.use('/pegawai', pegawaiRoutes);
+app.use('/presensi', presensiRoutes);
 
 // ============================================
 // ERROR HANDLING

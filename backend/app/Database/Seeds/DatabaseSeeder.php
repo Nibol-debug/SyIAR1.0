@@ -16,6 +16,10 @@ class DatabaseSeeder extends Seeder
         $this->call('InitialDataSeeder');
         echo "\n";
         
+        echo "▶ Phase 2: HRM (Pegawai, Mapel, Tahun Ajaran)...\n";
+        $this->call('Phase2Seeder');
+        echo "\n";
+        
         echo "▶ Phase 3: Kelas, Kategori, Aspek, Permissions...\n";
         $this->call('Phase3Seeder');
         echo "\n";

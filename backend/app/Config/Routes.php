@@ -60,9 +60,10 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) 
     });
     
     // ---- Phase 3: Santri Management ----
-    $routes->resource('santri', ['controller' => 'SantriController', 'filter' => 'auth']);
+    // Static routes MUST come before resource() to avoid (:segment) swallowing them
     $routes->post('santri/import', 'SantriController::import', ['filter' => 'auth']);
     $routes->get('santri/export', 'SantriController::export', ['filter' => 'auth']);
+    $routes->resource('santri', ['controller' => 'SantriController', 'filter' => 'auth']);
     
     // ---- Phase 3: Kelas Management ----
     $routes->resource('kelas', ['controller' => 'KelasController', 'filter' => 'auth']);
@@ -78,11 +79,23 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) 
     $routes->resource('aspek-penilaian', ['controller' => 'AspekPenilaianController', 'filter' => 'auth']);
     
     // ---- Phase 3: PPDB Online ----
-    $routes->resource('ppdb', ['controller' => 'PpdbController', 'filter' => 'auth']);
+    // Static routes BEFORE resource
     $routes->get('ppdb/stats', 'PpdbController::stats', ['filter' => 'auth']);
     $routes->put('ppdb/status/(:num)', 'PpdbController::updateStatus/$1', ['filter' => 'auth']);
+    $routes->resource('ppdb', ['controller' => 'PpdbController', 'filter' => 'auth']);
     
     // ---- Dashboard Stats ----
     $routes->get('dashboard/stats', 'DashboardController::stats', ['filter' => 'auth']);
+    
+    // ---- Phase 2: HRM (Kepegawaian) ----
+    $routes->get('pegawai/statistik', 'PegawaiController::statistik', ['filter' => 'auth']);
+    $routes->resource('pegawai', ['controller' => 'PegawaiController', 'filter' => 'auth']);
+    $routes->resource('mata-pelajaran', ['controller' => 'MataPelajaranController', 'filter' => 'auth']);
+    
+    // ---- Phase 3: Akademik ----
+    $routes->get('presensi-siswa/rekap', 'PresensiSiswaController::rekap', ['filter' => 'auth']);
+    $routes->post('presensi-siswa/batch', 'PresensiSiswaController::batch', ['filter' => 'auth']);
+    $routes->resource('presensi-siswa', ['controller' => 'PresensiSiswaController', 'filter' => 'auth']);
 });
+
 
