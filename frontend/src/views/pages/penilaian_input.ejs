@@ -73,19 +73,19 @@
                             </div>
                             <div class="flex items-center gap-3 min-w-[220px]">
                                 <% if (a.tipe_input === 'range') { %>
-                                    <input type="range" name="values[<%= a.id %>]" min="<%= a.skala_min %>" max="<%= a.skala_max %>" value="<%= a.existingValue || Math.round((parseFloat(a.skala_max) + parseFloat(a.skala_min))/2) %>"
+                                    <input type="range" name="values[id_<%= a.id %>]" min="<%= a.skala_min %>" max="<%= a.skala_max %>" value="<%= a.existingValue || Math.round((parseFloat(a.skala_max) + parseFloat(a.skala_min))/2) %>"
                                         class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
                                         oninput="this.nextElementSibling.textContent = this.value">
                                     <span class="text-sm font-mono font-bold text-primary w-10 text-center"><%= a.existingValue || Math.round((parseFloat(a.skala_max) + parseFloat(a.skala_min))/2) %></span>
                                 <% } else if (a.tipe_input === 'select' && a.options) { %>
-                                    <select name="values[<%= a.id %>]" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                    <select name="values[id_<%= a.id %>]" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm">
                                         <% var opts = typeof a.options === 'string' ? JSON.parse(a.options) : a.options; %>
                                         <% Object.keys(opts).forEach(function(key) { %>
                                             <option value="<%= key %>" <%= (a.existingValue == key) ? 'selected' : '' %>><%= opts[key] %> (<%= key %>)</option>
                                         <% }); %>
                                     </select>
                                 <% } else { %>
-                                    <input type="number" name="values[<%= a.id %>]" min="<%= a.skala_min %>" max="<%= a.skala_max %>" step="0.01"
+                                    <input type="number" name="values[id_<%= a.id %>]" min="<%= a.skala_min %>" max="<%= a.skala_max %>" step="0.01"
                                         value="<%= a.existingValue || '' %>" placeholder="0 - <%= a.skala_max %>"
                                         class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                                 <% } %>
@@ -139,8 +139,8 @@
 </main>
 
 <script>
-const API_TOKEN = '<%= typeof token !== 'undefined' ? token : '' %>';
-const API_BASE = '<%= process.env.API_BASE_URL || "http://localhost:8081/api" %>';
+const API_TOKEN = '<%= typeof token !== "undefined" ? token : "" %>';
+const API_BASE = '<%= typeof apiBaseUrl !== "undefined" ? apiBaseUrl : "http://localhost:8081/api" %>';
 
 // Fetch santri list when kelas changes
 document.getElementById('selectKelas').addEventListener('change', async function() {

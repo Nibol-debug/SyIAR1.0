@@ -66,6 +66,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) 
     $routes->resource('santri', ['controller' => 'SantriController', 'filter' => 'auth']);
     
     // ---- Phase 3: Kelas Management ----
+    // Static routes MUST come before resource() to avoid (:segment) swallowing them
+    $routes->get('kelas/grouped', 'KelasController::grouped', ['filter' => 'auth']);
+    $routes->get('kelas/jurusan-list', 'KelasController::jurusanList', ['filter' => 'auth']);
     $routes->resource('kelas', ['controller' => 'KelasController', 'filter' => 'auth']);
     
     // ---- Phase 3: Penilaian System ----
@@ -82,6 +85,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) 
     // Static routes BEFORE resource
     $routes->get('ppdb/stats', 'PpdbController::stats', ['filter' => 'auth']);
     $routes->put('ppdb/status/(:num)', 'PpdbController::updateStatus/$1', ['filter' => 'auth']);
+    $routes->post('ppdb/(:num)/convert-santri', 'PpdbController::convertToSantri/$1', ['filter' => 'auth']);
     $routes->resource('ppdb', ['controller' => 'PpdbController', 'filter' => 'auth']);
     
     // ---- Dashboard Stats ----
@@ -91,11 +95,35 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) 
     $routes->get('pegawai/statistik', 'PegawaiController::statistik', ['filter' => 'auth']);
     $routes->resource('pegawai', ['controller' => 'PegawaiController', 'filter' => 'auth']);
     $routes->resource('mata-pelajaran', ['controller' => 'MataPelajaranController', 'filter' => 'auth']);
-    
-    // ---- Phase 3: Akademik ----
+    $routes->get('presensi-pegawai/rekap', 'PresensiPegawaiController::rekap', ['filter' => 'auth']);
+    $routes->post('presensi-pegawai/batch', 'PresensiPegawaiController::batch', ['filter' => 'auth']);
+    $routes->resource('presensi-pegawai', ['controller' => 'PresensiPegawaiController', 'filter' => 'auth']);
     $routes->get('presensi-siswa/rekap', 'PresensiSiswaController::rekap', ['filter' => 'auth']);
     $routes->post('presensi-siswa/batch', 'PresensiSiswaController::batch', ['filter' => 'auth']);
     $routes->resource('presensi-siswa', ['controller' => 'PresensiSiswaController', 'filter' => 'auth']);
+    
+    // ---- Phase 3: Akademik ----
+    $routes->resource('tahun-ajaran', ['controller' => 'TahunAjaranController', 'filter' => 'auth']);
+    $routes->resource('jadwal-pelajaran', ['controller' => 'JadwalPelajaranController', 'filter' => 'auth']);
+    $routes->resource('jurnal-mengajar', ['controller' => 'JurnalMengajarController', 'filter' => 'auth']);
+    $routes->resource('kalender-akademik', ['controller' => 'KalenderAkademikController', 'filter' => 'auth']);
+    // ---- Phase 4: CBT & Penilaian Terintegrasi ----
+    $routes->resource('bank-soal', ['controller' => 'BankSoalController', 'filter' => 'auth']);
+    
+    $routes->post('ujian/(:num)/generate-token', 'UjianController::generateToken/$1', ['filter' => 'auth']);
+    $routes->get('ujian/(:num)/monitor', 'UjianController::monitor/$1', ['filter' => 'auth']);
+    $routes->resource('ujian', ['controller' => 'UjianController', 'filter' => 'auth']);
+    
+    $routes->group('ujian-sesi', ['filter' => 'auth'], function($routes) {
+        $routes->post('mulai', 'UjianSesiController::mulai');
+        $routes->get('(:num)/soal', 'UjianSesiController::getSoal/$1');
+        $routes->post('(:num)/jawab', 'UjianSesiController::simpanJawaban/$1');
+        $routes->post('(:num)/submit', 'UjianSesiController::submit/$1');
+        $routes->post('(:num)/pelanggaran', 'UjianSesiController::catatPelanggaran/$1');
+    });
+
+    $routes->get('penilaian/import-cbt/(:num)', 'PenilaianController::importCBT/$1', ['filter' => 'auth']);
+    $routes->post('penilaian/hitung-akhir', 'PenilaianController::hitungAkhir', ['filter' => 'auth']);
+    $routes->get('penilaian/rapor/(:num)', 'PenilaianController::rapor/$1', ['filter' => 'auth']);
+    $routes->get('penilaian/analisis-soal/(:num)', 'PenilaianController::analisisSoal/$1', ['filter' => 'auth']);
 });
-
-

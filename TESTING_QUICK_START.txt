@@ -1,0 +1,146 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    🧪 TESTING QUICK START GUIDE                           ║
+║                    SyIAR Gemilang - Sistem Akademik                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📌 STEP 1: START SERVERS (3 Terminals)
+
+Terminal 1 - Backend API (Port 8081):
+  $ cd backend
+  $ php spark serve --host 127.0.0.1 --port 8081
+
+Terminal 2 - Frontend (Port 3000):
+  $ cd frontend
+  $ npm start
+
+Terminal 3 - Testing:
+  $ bash test_api.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ AUTOMATED TESTING
+
+Run all tests at once:
+  $ bash test_api.sh
+
+Expected output:
+  ✓ Health check OK
+  ✓ Login successful
+  ✓ Pegawai API working
+  ✓ Penilaian API working
+  ✓ Bank Soal API working
+  ✓ Ujian API working
+  ✓ Dashboard stats OK
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌐 UI TESTING (Browser)
+
+1. Login: http://localhost:3000
+   Username: superadmin
+   Password: Admin123!
+
+2. Test Menus:
+   ✓ Dashboard → See stats (1.300 santri, 24 kelas)
+   ✓ Data Pegawai → CRUD staff/teachers
+   ✓ Data Santri → View 1.300 students
+   ✓ Input Nilai → Add grades
+   ✓ Bank Soal → Create exam questions
+   ✓ Manajemen Ujian → Create & manage exams
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ QUICK API TESTS (Copy-Paste)
+
+Login & Get Token:
+  curl -X POST http://127.0.0.1:8081/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"username":"superadmin","password":"Admin123!"}' | python3 -m json.tool
+
+List Pegawai (20 staff):
+  curl -X GET http://127.0.0.1:8081/api/pegawai \
+    -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+
+List Santri (1.300 students):
+  curl -X GET http://127.0.0.1:8081/api/santri?limit=10 \
+    -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+
+List Bank Soal (10+ questions):
+  curl -X GET http://127.0.0.1:8081/api/bank-soal \
+    -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION
+
+1. TESTING_GUIDE.md ........... Complete guide with explanations
+2. QUICK_TEST_COMMANDS.md .... Copy-paste commands by Phase
+3. UI_TESTING_STEPS.md ....... Step-by-step browser testing
+4. test_api.sh ............... Automated test script
+5. TESTING_INDEX.md .......... Documentation index
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 TESTING PHASES
+
+Phase 1: Authentication & RBAC
+  ✓ Login/logout
+  ✓ JWT token
+  ✓ Roles & permissions
+
+Phase 2: HR System (Pegawai)
+  ✓ CRUD Pegawai (20 seeded)
+  ✓ Mata Pelajaran (16)
+  ✓ Presensi Pegawai
+
+Phase 3: Academic
+  ✓ Kelas management (24)
+  ✓ Santri list (1.300)
+  ✓ Penilaian/Grading
+  ✓ Presensi Siswa
+  ✓ Jadwal Pelajaran
+
+Phase 4: CBT/Ujian
+  ✓ Bank Soal (10+ questions)
+  ✓ Ujian creation & token
+  ✓ Exam monitoring
+  ✓ Score integration
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 TROUBLESHOOTING
+
+Port already in use:
+  lsof -i :8081 | grep LISTEN | awk '{print $2}' | xargs kill -9
+
+Reset database:
+  cd backend
+  php spark migrate:refresh
+  php spark db:seed InitialDataSeeder Phase2Seeder Phase3Seeder Phase4Seeder SantriSeeder
+
+Login failed:
+  php spark db:seed ResetAdminPasswordSeeder
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 SYSTEM STATUS
+
+Backend API:   http://127.0.0.1:8081     ✅
+Frontend:      http://localhost:3000    ✅
+Database:      MySQL                     ✅
+Test Data:     1.300 students seeded    ✅
+
+All endpoints tested:           ✅
+All CRUD operations working:    ✅
+Authentication functional:      ✅
+Role-based access control:      ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ READY FOR PRODUCTION DEPLOYMENT ✨
+
+For detailed testing instructions, see:
+  → TESTING_INDEX.md (Start here!)
+
+Last Updated: 6 Mei 2026
+Status: ✅ FULLY OPERATIONAL

@@ -36,10 +36,42 @@
             <span class="material-symbols-outlined text-xl">badge</span>
             <span class="text-sm">Data Pegawai</span>
         </a>
+        <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/presensi-pegawai') ? 'active' : 'text-slate-600' %>" href="/presensi-pegawai">
+            <span class="material-symbols-outlined text-xl">fact_check</span>
+            <span class="text-sm">Presensi Pegawai</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/mata-pelajaran') ? 'active' : 'text-slate-600' %>" href="/mata-pelajaran">
+            <span class="material-symbols-outlined text-xl">menu_book</span>
+            <span class="text-sm">Mata Pelajaran</span>
+        </a>
         <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/ppdb') ? 'active' : 'text-slate-600' %>" href="/ppdb">
             <span class="material-symbols-outlined text-xl">person_add</span>
             <span class="text-sm">PPDB</span>
         </a>
+
+        <div class="pt-4 mt-2 border-t border-slate-100">
+            <p class="px-4 text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Akademik & CBT</p>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/akademik') ? 'active' : 'text-slate-600' %>" href="/akademik/jadwal-pelajaran">
+                <span class="material-symbols-outlined text-xl">event_note</span>
+                <span class="text-sm">Jadwal & Kalender</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/cbt/bank-soal') ? 'active' : 'text-slate-600' %>" href="/cbt/bank-soal">
+                <span class="material-symbols-outlined text-xl">quiz</span>
+                <span class="text-sm">Bank Soal</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/cbt/ujian-manage') ? 'active' : 'text-slate-600' %>" href="/cbt/ujian-manage">
+                <span class="material-symbols-outlined text-xl">computer</span>
+                <span class="text-sm">Manajemen Ujian</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/cbt/ujian-monitor') ? 'active' : 'text-slate-600' %>" href="/cbt/ujian-monitor">
+                <span class="material-symbols-outlined text-xl">monitoring</span>
+                <span class="text-sm">Monitor Ujian</span>
+            </a>
+            <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg <%= currentPath.startsWith('/cbt/ujian-siswa') ? 'active' : 'text-slate-600' %>" href="/cbt/ujian-siswa">
+                <span class="material-symbols-outlined text-xl">laptop_mac</span>
+                <span class="text-sm">Ujian Siswa (Demo)</span>
+            </a>
+        </div>
         
         <% if (typeof user !== 'undefined' && user && (user.role === 'super_admin' || (Array.isArray(user.roles) && user.roles.some(r => r.slug === 'super_admin')))) { %>
         <div class="pt-4 mt-4 border-t border-slate-100">

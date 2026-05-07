@@ -84,6 +84,8 @@ router.get('/input', requireAuth, permission.any(['penilaian.create']), async (r
             selectedSantriId: santri_id || '',
             selectedSantri,
             periode: periode || new Date().toISOString().slice(0, 7),
+            token: token,
+            apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8081/api',
             success: req.flash('success'),
             error: req.flash('error')
         });
@@ -169,6 +171,55 @@ router.get('/rekap', requireAuth, permission('penilaian.read'), async (req, res)
     } catch (err) {
         console.error('Error loading rekap:', err.message);
         req.flash('error', err.apiMessage || 'Gagal memuat rekap');
+        res.redirect('/penilaian');
+    }
+});
+
+// Cetak Rapor (Phase 4)
+router.get('/rapor', requireAuth, permission('penilaian.read'), async (req, res) => {
+    try {
+        const { santri_id } = req.query;
+        if (!santri_id) {
+            req.flash('error', 'Pilih santri terlebih dahulu');
+            return res.redirect('/penilaian');
+        }
+        
+        const token = req.session.token;
+        const client = createApiClient(token);
+        
+        // Use the new API endpoint
+        const raporRes = await client.get(`/penilaian/rapor/${santri_id}`);
+        
+        res.render('pages/akademik/rapor_generate', {
+            title: 'E-Rapor Santri',
+            rapor: raporRes.data?.data || null
+        });
+    } catch (err) {
+        console.error('Error loading rapor:', err.message);
+        req.flash('error', err.apiMessage || 'Gagal memuat e-rapor');
+        res.redirect('/penilaian');
+    }
+});
+
+// Penilaian Configuration (Categories & Aspects)
+router.get('/config', requireAuth, permission('role.manage'), async (req, res) => {
+    try {
+        const token = req.session.token;
+        const client = createApiClient(token);
+        
+        const [kategoriRes, aspekRes] = await Promise.all([
+            client.get('/kategori-penilaian'),
+            client.get('/aspek-penilaian')
+        ]);
+        
+        res.render('pages/penilaian_config', {
+            title: 'Konfigurasi Penilaian',
+            kategori: kategoriRes.data?.data || [],
+            aspek: aspekRes.data?.data || []
+        });
+    } catch (err) {
+        console.error('Error loading config:', err.message);
+        req.flash('error', 'Gagal memuat konfigurasi');
         res.redirect('/penilaian');
     }
 });

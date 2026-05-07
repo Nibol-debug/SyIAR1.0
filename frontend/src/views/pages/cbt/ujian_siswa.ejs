@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <%- include('../../partials/head') %>
+    <style>
+        .no-select { user-select: none; -webkit-user-select: none; -ms-user-select: none; }
+        .navigation-grid button.active { @apply border-primary bg-primary text-white; }
+        .navigation-grid button.answered { @apply bg-green-500 text-white border-green-600; }
+        .navigation-grid button.flagged { @apply bg-amber-500 text-white border-amber-600; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen no-select">
+    <div id="app" class="hidden">
+        <!-- Navbar Ujian -->
+        <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-primary text-white rounded-lg flex items-center justify-center">
+                    <span class="material-symbols-outlined">school</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-800 leading-tight">SyIAR Gemilang CBT</h1>
+                    <p class="text-xs text-slate-500 font-medium" id="exam-title">Memuat...</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="flex flex-col items-end">
+                    <p class="text-sm font-bold text-slate-800"><%= user.nama_lengkap %></p>
+                    <p class="text-xs text-slate-500">ID Sesi: #<span id="display-sesi-id"></span></p>
+                </div>
+                <div class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold flex items-center gap-2 border border-red-100 shadow-inner">
+                    <span class="material-symbols-outlined text-xl">timer</span>
+                    <span class="text-xl font-mono tracking-widest" id="timer">00:00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Area Soal -->
+            <div class="lg:col-span-3 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 min-h-[400px]">
+                    <div class="flex justify-between items-start mb-6 pb-6 border-b border-slate-100">
+                        <span class="bg-slate-100 text-slate-600 px-3 py-1 text-sm font-bold rounded">Soal No. <span id="current-no">1</span></span>
+                        <div class="flex gap-2">
+                             <button id="btn-ragu" class="flex items-center gap-1 text-amber-600 border border-amber-200 px-3 py-1 rounded text-sm hover:bg-amber-50">
+                                <span class="material-symbols-outlined text-sm">flag</span> Ragu-ragu
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="question-container" class="prose max-w-none text-slate-800 mb-8 text-lg">
+                        <!-- Pertanyaan akan muncul di sini -->
+                    </div>
+
+                    <div id="options-container" class="space-y-3">
+                        <!-- Pilihan jawaban akan muncul di sini -->
+                    </div>
+                </div>
+
+                <!-- Navigasi Bawah -->
+                <div class="flex justify-between items-center bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <button id="btn-prev" class="px-6 py-2 border border-slate-200 rounded-lg text-slate-600 font-medium hover:bg-slate-50 disabled:opacity-50 transition-colors">
+                        Soal Sebelumnya
+                    </button>
+                    <div class="text-slate-400 text-sm italic">Otomatis tersimpan</div>
+                    <button id="btn-next" class="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium shadow-sm transition-colors">
+                        Soal Selanjutnya
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Navigasi Soal -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24">
+                    <h3 class="font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Daftar Soal</h3>
+                    <div id="navigation-grid" class="grid grid-cols-5 gap-2 mb-8 navigation-grid">
+                        <!-- Grid nomor soal -->
+                    </div>
+
+                    <div class="space-y-2 mb-6 text-sm">
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 bg-green-500 rounded-sm"></div> <span class="text-slate-600">Sudah Dijawab</span></div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 bg-amber-500 rounded-sm"></div> <span class="text-slate-600">Ragu-ragu</span></div>
+                        <div class="flex items-center gap-2"><div class="w-4 h-4 bg-white border border-slate-200 rounded-sm"></div> <span class="text-slate-600">Belum Dijawab</span></div>
+                    </div>
+
+                    <button id="btn-finish" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold shadow transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Selesai Ujian
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-[200]">
+        <div class="w-16 h-16 border-4 border-slate-100 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-500 font-medium">Menyiapkan Lembar Ujian...</p>
+    </div>
+
+    <!-- Overlay Pelanggaran -->
+    <div id="violation-overlay" class="fixed inset-0 bg-slate-900/90 z-[300] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-4xl">warning</span>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Peringatan Pelanggaran!</h2>
+            <p class="text-slate-600 mb-6">Anda terdeteksi berpindah tab atau meminimalkan browser. Ini adalah peringatan ke-<span class="font-bold text-red-600" id="warn-count">0</span>. Jika mencapai batas maksimal, ujian akan dihentikan otomatis.</p>
+            <button onclick="document.getElementById('violation-overlay').classList.add('hidden')" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-lg font-bold transition-colors">
+                Saya Mengerti, Kembali ke Ujian
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const sesiId = new URLSearchParams(window.location.search).get('sesi_id');
+        const token = '<%= token %>';
+        
+        let questions = [];
+        let currentIndex = 0;
+        let answers = {}; // { soal_id: jawaban }
+        let flagged = new Set();
+        let warnCount = 0;
+
+        if (!sesiId) {
+            alert('Sesi tidak valid');
+            window.location.href = '/dashboard';
+        }
+
+        async function init() {
+            try {
+                const res = await axios.get(`http://localhost:8081/api/ujian-sesi/${sesiId}/soal`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                questions = res.data.data;
+                document.getElementById('display-sesi-id').innerText = sesiId;
+                
+                renderGrid();
+                showQuestion(0);
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                
+                startTimer();
+            } catch (err) {
+                console.error(err);
+                alert('Gagal memuat soal. Silakan refresh.');
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('navigation-grid');
+            grid.innerHTML = '';
+            questions.forEach((q, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-10 h-10 rounded border text-sm font-medium flex items-center justify-center transition-all`;
+                btn.innerText = i + 1;
+                btn.onclick = () => showQuestion(i);
+                
+                if (i === currentIndex) btn.classList.add('border-primary', 'border-2', 'ring-2', 'ring-primary/20');
+                if (answers[q.id]) btn.classList.add('bg-green-500', 'text-white', 'border-green-600');
+                if (flagged.has(q.id)) {
+                    btn.classList.remove('bg-green-500', 'text-white');
+                    btn.classList.add('bg-amber-500', 'text-white', 'border-amber-600');
+                }
+                
+                grid.appendChild(btn);
+            });
+        }
+
+        function showQuestion(index) {
+            currentIndex = index;
+            const q = questions[index];
+            
+            document.getElementById('current-no').innerText = index + 1;
+            document.getElementById('question-container').innerHTML = q.pertanyaan;
+            
+            const labelMap = ['A', 'B', 'C', 'D', 'E'];
+            const optionsHtml = q.pilihan_jawaban ? Object.entries(q.pilihan_jawaban).map(([key, val], idx) => `
+                <label class="flex items-center p-4 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors ${answers[q.id] === val ? 'bg-blue-50 border-blue-200' : ''}">
+                    <input type="radio" name="jawaban" value="${val}" class="w-5 h-5 text-primary border-slate-300 focus:ring-primary" ${answers[q.id] === val ? 'checked' : ''} onchange="saveAnswer('${q.id}', '${val}')">
+                    <span class="ml-3 text-slate-700 font-medium text-base w-full">${labelMap[idx] || key}. ${val}</span>
+                </label>
+            `).join('') : '';
+            
+            document.getElementById('options-container').innerHTML = optionsHtml;
+            
+            // Update buttons
+            document.getElementById('btn-prev').disabled = (index === 0);
+            document.getElementById('btn-next').innerText = (index === questions.length - 1) ? 'Konfirmasi Selesai' : 'Soal Selanjutnya';
+            
+            renderGrid();
+        }
+
+        async function saveAnswer(soalId, jawaban) {
+            answers[soalId] = jawaban;
+            renderGrid();
+            try {
+                await axios.post(`http://localhost:8081/api/ujian-sesi/${sesiId}/jawab`, {
+                    soal_id: soalId,
+                    jawaban_siswa: jawaban
+                }, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch (err) {
+                console.error('Gagal simpan jawaban');
+            }
+        }
+
+        document.getElementById('btn-next').onclick = () => {
+            if (currentIndex < questions.length - 1) {
+                showQuestion(currentIndex + 1);
+            } else {
+                finishExam();
+            }
+        };
+
+        document.getElementById('btn-prev').onclick = () => {
+            if (currentIndex > 0) showQuestion(currentIndex - 1);
+        };
+
+        document.getElementById('btn-ragu').onclick = () => {
+            const q = questions[currentIndex];
+            if (flagged.has(q.id)) flagged.delete(q.id);
+            else flagged.add(q.id);
+            renderGrid();
+        };
+
+        async function finishExam() {
+            if (!confirm('Apakah Anda yakin ingin mengakhiri ujian?')) return;
+            try {
+                await axios.post(`http://localhost:8081/api/ujian-sesi/${sesiId}/submit`, {}, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert('Ujian berhasil diselesaikan!');
+                window.location.href = '/dashboard';
+            } catch (err) {
+                alert('Gagal submit ujian. Silakan coba lagi.');
+            }
+        }
+
+        document.getElementById('btn-finish').onclick = finishExam;
+
+        function startTimer() {
+            let duration = 60 * 60; // 1 jam dummy
+            const timerDisplay = document.getElementById('timer');
+            
+            setInterval(() => {
+                let hours = Math.floor(duration / 3600);
+                let minutes = Math.floor((duration % 3600) / 60);
+                let seconds = duration % 60;
+                
+                timerDisplay.innerText = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                if (duration > 0) duration--;
+                else finishExam();
+            }, 1000);
+        }
+
+        // Anti-Cheat
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'hidden') {
+                warnCount++;
+                document.getElementById('warn-count').innerText = warnCount;
+                document.getElementById('violation-overlay').classList.remove('hidden');
+                
+                try {
+                    await axios.post(`http://localhost:8081/api/ujian-sesi/${sesiId}/pelanggaran`, {
+                        jenis: 'Pindah Tab/Minimize',
+                        detail: `Peringatan ke-${warnCount}`
+                    }, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } catch (err) {}
+                
+                if (warnCount >= 3) {
+                    alert('Batas pelanggaran maksimal tercapai. Ujian dihentikan.');
+                    finishExam();
+                }
+            }
+        });
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        init();
+    </script>
+</body>
+</html>

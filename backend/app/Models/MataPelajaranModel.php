@@ -8,7 +8,7 @@ class MataPelajaranModel extends Model
 {
     protected $table = 'mata_pelajaran';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['kode_mapel', 'nama_mapel', 'kelompok', 'deskripsi', 'is_active'];
+    protected $allowedFields = ['aspek_id', 'kode_mapel', 'nama_mapel', 'kelompok', 'deskripsi', 'is_active'];
     protected $useTimestamps = true;
 
     public function getActiveByKelompok($kelompok = null)

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<%- include('../../partials/sidebar', { _currentPath: '/penilaian' }) %>
+<%- include('../../partials/topbar') %>
+
+<main class="ml-64 p-8 bg-slate-50 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-6 flex items-center justify-between print:hidden">
+            <div class="flex items-center gap-4">
+                <a href="/penilaian" class="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 shadow-sm">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">E-Rapor Santri</h1>
+                    <p class="text-sm text-slate-500 mt-1">Laporan hasil belajar berdasarkan perhitungan 30/30/40</p>
+                </div>
+            </div>
+            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-medium shadow transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">print</span> Cetak PDF
+            </button>
+        </div>
+
+        <% if (!rapor) { %>
+        <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
+            <span class="material-symbols-outlined text-5xl text-slate-300 mb-3 block">assignment_late</span>
+            <p class="text-slate-500">Data rapor tidak tersedia untuk santri ini.</p>
+            <a href="/penilaian" class="mt-4 inline-block text-primary hover:underline">← Kembali ke Penilaian</a>
+        </div>
+        <% } else { %>
+
+        <!-- Dokumen Rapor -->
+        <div class="bg-white p-10 rounded-xl shadow-sm border border-slate-200 printable-rapor">
+            <!-- Header/Kop -->
+            <div class="text-center border-b-[3px] border-double border-slate-800 pb-6 mb-8 flex items-center gap-6">
+                <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">RG</div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold uppercase tracking-wide text-slate-800">Rumah Gemilang Indonesia</h2>
+                    <p class="text-sm font-semibold mt-1">Pondok Pesantren Al-Azhar Gemilang</p>
+                    <p class="text-xs text-slate-500 mt-1">Jl. Al-Azhar No. 1, Kota Pendidikan, Jawa Barat | Telp: (021) 1234-5678</p>
+                </div>
+            </div>
+
+            <h3 class="text-center text-lg font-bold uppercase mb-6 underline underline-offset-4 decoration-solid">Laporan Hasil Belajar Santri</h3>
+
+            <!-- Biodata -->
+            <div class="grid grid-cols-2 gap-x-8 gap-y-1 mb-6 text-sm border border-slate-200 p-4 rounded-lg bg-slate-50">
+                <div class="flex"><span class="w-36 font-semibold">Nama Lengkap</span><span class="mr-2">:</span><span class="font-bold"><%= rapor.santri?.nama_lengkap || '-' %></span></div>
+                <div class="flex"><span class="w-36 font-semibold">Kelas</span><span class="mr-2">:</span><span><%= rapor.santri?.nama_kelas || '-' %></span></div>
+                <div class="flex"><span class="w-36 font-semibold">NIS/NISN</span><span class="mr-2">:</span><span><%= rapor.santri?.nis || '-' %> / <%= rapor.santri?.nisn || '-' %></span></div>
+                <div class="flex"><span class="w-36 font-semibold">Semester</span><span class="mr-2">:</span><span>Ganjil 2025/2026</span></div>
+            </div>
+
+            <!-- Tabel Nilai per Kategori -->
+            <% if (rapor.rapor && rapor.rapor.length > 0) { %>
+                <% rapor.rapor.forEach((kat, ki) => { %>
+                <div class="mb-6">
+                    <h4 class="font-bold mb-2 text-sm uppercase bg-slate-100 px-3 py-2 border border-slate-300 rounded-t">
+                        <%= String.fromCharCode(65+ki) %>. <%= kat.kategori %>
+                    </h4>
+                    <table class="w-full border-collapse border border-slate-300 text-sm rounded-b overflow-hidden">
+                        <thead>
+                            <tr class="bg-slate-50 text-center font-bold text-xs">
+                                <th class="border border-slate-300 p-2 w-8">No</th>
+                                <th class="border border-slate-300 p-2 text-left">Aspek Penilaian</th>
+                                <th class="border border-slate-300 p-2 w-16">Harian</th>
+                                <th class="border border-slate-300 p-2 w-16">UTS</th>
+                                <th class="border border-slate-300 p-2 w-16">UAS</th>
+                                <th class="border border-slate-300 p-2 w-16">Akhir</th>
+                                <th class="border border-slate-300 p-2 w-16">Predikat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% kat.items.forEach((item, idx) => { %>
+                            <tr class="<%= idx % 2 === 0 ? '' : 'bg-slate-50' %>">
+                                <td class="border border-slate-300 p-2 text-center"><%= idx+1 %></td>
+                                <td class="border border-slate-300 p-2 font-medium"><%= item.aspek %></td>
+                                <td class="border border-slate-300 p-2 text-center"><%= item.harian %></td>
+                                <td class="border border-slate-300 p-2 text-center"><%= item.uts %></td>
+                                <td class="border border-slate-300 p-2 text-center"><%= item.uas %></td>
+                                <td class="border border-slate-300 p-2 text-center font-bold <%= item.akhir >= 75 ? 'text-emerald-700' : 'text-red-600' %>"><%= item.akhir %></td>
+                                <td class="border border-slate-300 p-2 text-center font-bold"><%= item.predikat %></td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                <% }) %>
+            <% } else { %>
+            <div class="text-center py-8 text-slate-400 border border-dashed border-slate-300 rounded-lg mb-6">
+                <p>Belum ada data nilai untuk ditampilkan.</p>
+            </div>
+            <% } %>
+
+            <!-- Statistik Akhir -->
+            <div class="flex items-center gap-4 p-4 border border-slate-300 rounded-lg mb-8 bg-slate-50">
+                <div class="flex-1 text-center">
+                    <p class="text-xs text-slate-500">Rata-rata Akhir</p>
+                    <p class="text-3xl font-bold <%= rapor.statistik?.rata_rata >= 75 ? 'text-emerald-600' : 'text-red-600' %>"><%= rapor.statistik?.rata_rata || 0 %></p>
+                </div>
+                <div class="flex-1 text-center">
+                    <p class="text-xs text-slate-500">Predikat</p>
+                    <p class="text-3xl font-bold text-primary"><%= rapor.statistik?.predikat || '-' %></p>
+                </div>
+                <div class="flex-1 text-center">
+                    <p class="text-xs text-slate-500">Status</p>
+                    <p class="font-bold text-lg <%= rapor.statistik?.rata_rata >= 75 ? 'text-emerald-600' : 'text-amber-600' %>"><%= rapor.statistik?.keterangan || '-' %></p>
+                </div>
+            </div>
+
+            <!-- Catatan Wali Kelas -->
+            <div class="mb-12">
+                <h4 class="font-bold mb-2 text-sm">Catatan Wali Kelas:</h4>
+                <div class="border border-slate-300 p-4 min-h-[80px] text-sm italic rounded bg-slate-50">
+                    "<%= rapor.catatan_wali_kelas || 'Tingkatkan terus semangat belajar dan pertahankan prestasi yang ada.' %>"
+                </div>
+            </div>
+
+            <!-- Tanda Tangan -->
+            <div class="flex justify-between items-end mt-8 text-sm px-4">
+                <div class="text-center">
+                    <p class="mb-20">Mengetahui,<br>Orang Tua/Wali</p>
+                    <p class="border-b border-slate-800 w-44 mx-auto"></p>
+                    <p class="text-xs text-slate-500 mt-1">(__________________)</p>
+                </div>
+                <div class="text-center">
+                    <p class="mb-20">Bogor, <%= new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) %><br>Wali Kelas</p>
+                    <p class="border-b border-slate-800 w-44 mx-auto"></p>
+                    <p class="text-xs text-slate-500 mt-1">(__________________)</p>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+</main>
+
+<style>
+@media print {
+    body { background: white; margin: 0; }
+    .ml-64 { margin-left: 0; }
+    aside, header, .print\:hidden { display: none !important; }
+    .printable-rapor { border: none; box-shadow: none; border-radius: 0; }
+    .p-8 { padding: 0; }
+    .bg-slate-50 { background: white; }
+}
+</style>
+
+</body>
+</html>

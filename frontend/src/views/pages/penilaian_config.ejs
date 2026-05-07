@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/penilaian'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen bg-slate-50">
+    <div class="mb-8">
+        <a href="/penilaian" class="text-sm text-slate-500 hover:text-primary flex items-center gap-1 mb-4">
+            <span class="material-symbols-outlined text-lg">arrow_back</span> Kembali
+        </a>
+        <h1 class="text-2xl font-bold text-on-surface">Konfigurasi Penilaian</h1>
+        <p class="text-sm text-slate-500 mt-1">Kelola kategori dan aspek penilaian akademik</p>
+    </div>
+
+    <%- include('../partials/alert') %>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Kategori Table -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-bold text-slate-800">Kategori</h3>
+                    <button onclick="openKategoriModal()" class="text-primary hover:text-primary-dark">
+                        <span class="material-symbols-outlined">add_circle</span>
+                    </button>
+                </div>
+                <div class="divide-y divide-slate-100">
+                    <% kategori.forEach(k => { %>
+                    <div class="p-4 flex items-center justify-between group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full" style="background-color: <%= k.warna %>"></div>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800"><%= k.nama_kategori %></p>
+                                <p class="text-[10px] text-slate-400 font-mono uppercase"><%= k.kode_kategori %></p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button class="p-1 text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">edit</span></button>
+                            <button class="p-1 text-slate-400 hover:text-red-500"><span class="material-symbols-outlined text-sm">delete</span></button>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aspek Table -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-bold text-slate-800">Aspek Penilaian</h3>
+                    <button onclick="openAspekModal()" class="btn-primary py-1.5 px-3 text-xs flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">add</span> Tambah Aspek
+                    </button>
+                </div>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/50 text-slate-500 text-[10px] uppercase tracking-wider">
+                            <th class="p-4 font-semibold border-b">Kategori</th>
+                            <th class="p-4 font-semibold border-b">Nama Aspek</th>
+                            <th class="p-4 font-semibold border-b">Tipe</th>
+                            <th class="p-4 font-semibold border-b">Bobot</th>
+                            <th class="p-4 font-semibold border-b text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-slate-100">
+                        <% aspek.forEach(a => { %>
+                        <tr class="hover:bg-slate-50/30 transition-colors">
+                            <td class="p-4">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold" style="background-color: <%= a.warna %>15; color: <%= a.warna %>">
+                                    <%= a.nama_kategori %>
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <p class="font-medium text-slate-800"><%= a.nama_aspek %></p>
+                                <p class="text-[10px] text-slate-400"><%= a.kode_aspek %></p>
+                            </td>
+                            <td class="p-4 capitalize text-xs text-slate-500"><%= a.tipe_input %></td>
+                            <td class="p-4 font-mono text-xs"><%= a.bobot %>x</td>
+                            <td class="p-4 text-right">
+                                <button class="text-slate-300 hover:text-red-500 transition-colors"><span class="material-symbols-outlined text-sm">delete</span></button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

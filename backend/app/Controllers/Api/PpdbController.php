@@ -81,4 +81,46 @@ class PpdbController extends BaseController
         
         return $this->respond(['success' => true, 'message' => 'Status berhasil diupdate']);
     }
+
+    public function convertToSantri($id)
+    {
+        $model = new PpdbRegistrationModel();
+        $registration = $model->find($id);
+        
+        if (!$registration) return $this->failNotFound('Pendaftaran tidak ditemukan');
+        if ($registration['status_pendaftaran'] !== 'accepted') {
+            return $this->fail('Hanya pendaftar dengan status Lulus (accepted) yang bisa dijadikan santri');
+        }
+        
+        // Cek apakah sudah jadi santri
+        $santriModel = new \App\Models\SantriModel();
+        $existing = $santriModel->where('email', $registration['email'])->first();
+        if ($existing) return $this->fail('Santri dengan email ini sudah terdaftar');
+
+        // Insert to santris
+        $newSantri = [
+            'nama_lengkap' => $registration['nama_calon'],
+            'jenis_kelamin' => $registration['jenis_kelamin'],
+            'tempat_lahir' => $registration['tempat_lahir'] ?? 'Belum Diisi',
+            'tanggal_lahir' => $registration['tanggal_lahir'],
+            'alamat' => $registration['alamat'] ?? 'Belum Diisi',
+            'email' => $registration['email'],
+            'no_telepon' => $registration['no_telepon'],
+            'status' => 'aktif',
+            'tanggal_masuk' => date('Y-m-d')
+        ];
+        
+        $santriId = $santriModel->insert($newSantri);
+        
+        // Update registration status or catatan
+        $model->update($id, [
+            'catatan_admin' => 'Sudah dikonversi menjadi santri aktif pada ' . date('Y-m-d H:i:s')
+        ]);
+        
+        return $this->respondCreated([
+            'success' => true,
+            'message' => 'Berhasil mengonversi pendaftar menjadi santri aktif',
+            'data' => ['santri_id' => $santriId]
+        ]);
+    }
 }

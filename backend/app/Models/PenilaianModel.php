@@ -9,7 +9,7 @@ class PenilaianModel extends Model
     protected $table = 'penilaian';
     protected $primaryKey = 'id';
     protected $allowedFields = [
-        'santri_id', 'aspek_id', 'guru_id', 'nilai', 'keterangan',
+        'santri_id', 'aspek_id', 'guru_id', 'nilai', 'jenis_nilai', 'keterangan',
         'tanggal_penilaian', 'periode', 'is_draft'
     ];
     protected $useTimestamps = true;

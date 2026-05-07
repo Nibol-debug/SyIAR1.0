@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<%- include('../../partials/sidebar', { _currentPath: '/cbt/bank-soal' }) %>
+<%- include('../../partials/topbar') %>
+
+<main class="ml-64 p-8 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">Bank Soal</h1>
+                <p class="text-slate-500 mt-1">Kelola pertanyaan untuk ujian CBT</p>
+            </div>
+            <button onclick="openModal()" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">add</span> Buat Soal Baru
+            </button>
+        </div>
+
+        <!-- Flash -->
+        <% if (typeof success !== 'undefined' && success && success.length) { %>
+        <div class="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">check_circle</span> <%= success %>
+        </div>
+        <% } %>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 flex flex-wrap gap-3 bg-slate-50/50">
+                <select id="filterMapel" onchange="filterSoal()" class="border border-slate-200 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-primary/20">
+                    <option value="">Semua Mata Pelajaran</option>
+                    <% if (typeof mapel !== 'undefined') { mapel.forEach(m => { %>
+                        <option value="<%= m.id %>"><%= m.nama_mapel %></option>
+                    <% })} %>
+                </select>
+                <select id="filterTingkat" onchange="filterSoal()" class="border border-slate-200 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-primary/20">
+                    <option value="">Semua Tingkat</option>
+                    <option value="mudah">Mudah</option>
+                    <option value="sedang">Sedang</option>
+                    <option value="sulit">Sulit</option>
+                </select>
+                <div class="relative flex-1 min-w-[200px]">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                    <input type="text" id="searchInput" oninput="filterSoal()" placeholder="Cari pertanyaan..." class="pl-9 w-full border border-slate-200 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-primary/20">
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                            <th class="p-4 font-semibold border-b">Mata Pelajaran</th>
+                            <th class="p-4 font-semibold border-b w-24 text-center">Tipe</th>
+                            <th class="p-4 font-semibold border-b">Pertanyaan</th>
+                            <th class="p-4 font-semibold border-b w-20 text-center">Tingkat</th>
+                            <th class="p-4 font-semibold border-b w-24 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-slate-100" id="soalTbody">
+                        <% if (typeof soal !== 'undefined' && soal.length > 0) { %>
+                            <% soal.forEach(s => { %>
+                            <tr class="hover:bg-slate-50/50 soal-row"
+                                data-mapel="<%= s.mapel_id %>"
+                                data-tingkat="<%= s.tingkat_kesulitan %>"
+                                data-pertanyaan="<%= (s.pertanyaan || '').toLowerCase() %>">
+                                <td class="p-4 font-medium text-slate-800"><%= s.nama_mapel || '-' %></td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold <%= s.tipe_soal === 'pg' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700' %>">
+                                        <%= s.tipe_soal === 'pg' ? 'PG' : 'Esai' %>
+                                    </span>
+                                </td>
+                                <td class="p-4 text-slate-600 max-w-md">
+                                    <p class="line-clamp-2"><%= s.pertanyaan %></p>
+                                    <% if (s.tipe_soal === 'pg' && s.kunci_jawaban) { %>
+                                    <p class="text-[10px] text-emerald-600 mt-1">Kunci: <%= s.kunci_jawaban %></p>
+                                    <% } %>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold
+                                        <%= s.tingkat_kesulitan === 'mudah' ? 'bg-green-50 text-green-700' :
+                                           (s.tingkat_kesulitan === 'sedang' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700') %>">
+                                        <%= s.tingkat_kesulitan?.charAt(0).toUpperCase() + s.tingkat_kesulitan?.slice(1) %>
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <div class="flex justify-center gap-1">
+                                        <button onclick="editSoal(<%- JSON.stringify(s) %>)" class="p-1.5 rounded hover:bg-primary/10 text-primary" title="Edit">
+                                            <span class="material-symbols-outlined text-lg">edit</span>
+                                        </button>
+                                        <button onclick="deleteSoal('<%= s.id %>')" class="p-1.5 rounded hover:bg-red-50 text-red-500" title="Hapus">
+                                            <span class="material-symbols-outlined text-lg">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr><td colspan="5" class="p-12 text-center text-slate-400">
+                                <span class="material-symbols-outlined text-5xl block mb-2">quiz</span>
+                                Belum ada soal. Klik "Buat Soal Baru" untuk memulai.
+                            </td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Form Soal -->
+<div id="soalModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
+            <h3 class="font-bold text-lg" id="modalTitle">Buat Soal Baru</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="soalForm" class="p-6 space-y-4">
+            <input type="hidden" id="soalId">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Mata Pelajaran *</label>
+                    <select id="inputMapel" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                        <option value="">-- Pilih Mapel --</option>
+                        <% if (typeof mapel !== 'undefined') { mapel.forEach(m => { %>
+                            <option value="<%= m.id %>"><%= m.nama_mapel %></option>
+                        <% })} %>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Tipe Soal *</label>
+                    <select id="inputTipe" required onchange="toggleOptions()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                        <option value="pg">Pilihan Ganda</option>
+                        <option value="esai">Esai</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Pertanyaan *</label>
+                <textarea id="inputPertanyaan" required rows="3" placeholder="Tulis pertanyaan di sini..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20"></textarea>
+            </div>
+            <!-- Pilihan Ganda Options -->
+            <div id="pgSection">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Pilihan Jawaban</label>
+                <div class="space-y-2">
+                    <% ['A','B','C','D'].forEach(opt => { %>
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 flex-shrink-0"><%= opt %></span>
+                        <input type="text" id="pilihan<%= opt %>" placeholder="Pilihan <%= opt %>..." class="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary/20">
+                    </div>
+                    <% }) %>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Kunci Jawaban *</label>
+                    <select id="inputKunci" class="border border-slate-200 rounded-lg px-3 py-2 text-sm w-full focus:ring-2 focus:ring-primary/20">
+                        <% ['A','B','C','D'].forEach(opt => { %><option value="<%= opt %>"><%= opt %></option><% }) %>
+                    </select>
+                </div>
+            </div>
+            <div id="esaiSection" class="hidden">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Kunci Jawaban (Referensi)</label>
+                <textarea id="inputKunciEsai" rows="2" placeholder="Jawaban referensi untuk penilaian manual..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Tingkat Kesulitan</label>
+                    <select id="inputTingkat" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                        <option value="mudah">Mudah</option>
+                        <option value="sedang">Sedang</option>
+                        <option value="sulit">Sulit</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Topik / Bab</label>
+                    <input type="text" id="inputTopik" placeholder="Contoh: Bab 1 - Tauhid" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 text-slate-600 bg-slate-100 rounded-lg text-sm font-medium hover:bg-slate-200">Batal</button>
+                <button type="submit" id="btnSimpan" class="px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">save</span> Simpan Soal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const AUTH_TOKEN = '<%= token %>';
+
+function openModal(soal = null) {
+    document.getElementById('soalId').value = '';
+    document.getElementById('soalForm').reset();
+    document.getElementById('modalTitle').textContent = 'Buat Soal Baru';
+    document.getElementById('soalModal').classList.remove('hidden');
+    toggleOptions();
+}
+function closeModal() { document.getElementById('soalModal').classList.add('hidden'); }
+
+function toggleOptions() {
+    const tipe = document.getElementById('inputTipe').value;
+    document.getElementById('pgSection').classList.toggle('hidden', tipe !== 'pg');
+    document.getElementById('esaiSection').classList.toggle('hidden', tipe !== 'esai');
+}
+
+function editSoal(s) {
+    document.getElementById('soalId').value = s.id;
+    document.getElementById('inputMapel').value = s.mapel_id;
+    document.getElementById('inputTipe').value = s.tipe_soal;
+    document.getElementById('inputPertanyaan').value = s.pertanyaan;
+    document.getElementById('inputTingkat').value = s.tingkat_kesulitan;
+    document.getElementById('inputTopik').value = s.topik || '';
+    toggleOptions();
+    if (s.tipe_soal === 'pg') {
+        const pilihan = Array.isArray(s.pilihan_jawaban) ? s.pilihan_jawaban : (typeof s.pilihan_jawaban === 'string' ? JSON.parse(s.pilihan_jawaban) : []);
+        ['A','B','C','D'].forEach((opt, i) => {
+            const el = document.getElementById('pilihan' + opt);
+            if (el) el.value = pilihan[i] || '';
+        });
+        document.getElementById('inputKunci').value = s.kunci_jawaban || 'A';
+    } else {
+        document.getElementById('inputKunciEsai').value = s.kunci_jawaban || '';
+    }
+    document.getElementById('modalTitle').textContent = 'Edit Soal';
+    document.getElementById('soalModal').classList.remove('hidden');
+}
+
+document.getElementById('soalForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnSimpan');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-spin material-symbols-outlined text-sm">sync</span> Menyimpan...';
+
+    const tipe = document.getElementById('inputTipe').value;
+    let pilohan = null, kunci = '';
+
+    if (tipe === 'pg') {
+        pilohan = ['A','B','C','D'].map(o => document.getElementById('pilihan'+o).value).filter(v=>v);
+        const kunciOpt = document.getElementById('inputKunci').value;
+        const idx = ['A','B','C','D'].indexOf(kunciOpt);
+        kunci = pilohan[idx] || kunciOpt;
+    } else {
+        kunci = document.getElementById('inputKunciEsai').value;
+    }
+
+    const payload = {
+        mapel_id: parseInt(document.getElementById('inputMapel').value),
+        tipe_soal: tipe,
+        pertanyaan: document.getElementById('inputPertanyaan').value,
+        pilihan_jawaban: pilohan,
+        kunci_jawaban: kunci,
+        tingkat_kesulitan: document.getElementById('inputTingkat').value,
+        topik: document.getElementById('inputTopik').value
+    };
+
+    const soalId = document.getElementById('soalId').value;
+    const url = soalId ? `http://localhost:8081/api/bank-soal/${soalId}` : 'http://localhost:8081/api/bank-soal';
+    const method = soalId ? 'PUT' : 'POST';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok || data.status === 201 || data.status === 200) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.messages?.error || JSON.stringify(data)));
+        }
+    } catch(err) {
+        alert('Gagal menyimpan: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> Simpan Soal';
+    }
+};
+
+async function deleteSoal(id) {
+    if (!confirm('Hapus soal ini? Tindakan tidak dapat dibatalkan.')) return;
+    try {
+        await fetch(`http://localhost:8081/api/bank-soal/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN }
+        });
+        location.reload();
+    } catch(e) { alert('Gagal menghapus'); }
+}
+
+function filterSoal() {
+    const mapelFilter = document.getElementById('filterMapel').value;
+    const tingkatFilter = document.getElementById('filterTingkat').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.soal-row').forEach(row => {
+        const matchMapel = !mapelFilter || row.dataset.mapel === mapelFilter;
+        const matchTingkat = !tingkatFilter || row.dataset.tingkat === tingkatFilter;
+        const matchSearch = !search || row.dataset.pertanyaan.includes(search);
+        row.style.display = (matchMapel && matchTingkat && matchSearch) ? '' : 'none';
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<%- include('../../partials/sidebar', { _currentPath: '/cbt/ujian-monitor' }) %>
+<%- include('../../partials/topbar') %>
+
+<main class="ml-64 p-8 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="/cbt/ujian-manage" class="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">Monitor Ujian: <%= ujian.judul || 'Ujian' %></h1>
+                    <p class="text-sm text-slate-500 flex items-center gap-2 mt-1">
+                        Token Aktif: <span class="font-mono bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold"><%= ujian.token_akses || '---' %></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <span class="material-symbols-outlined">group</span>
+                </div>
+                <div>
+                    <p class="text-slate-500 text-sm font-medium">Total Peserta</p>
+                    <p class="text-2xl font-bold text-slate-800"><%= peserta.length %></p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <span class="material-symbols-outlined">pending_actions</span>
+                </div>
+                <div>
+                    <p class="text-slate-500 text-sm font-medium">Mengerjakan</p>
+                    <p class="text-2xl font-bold text-slate-800"><%= peserta.filter(p => p.status === 'mengerjakan').length %></p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                    <span class="material-symbols-outlined">task_alt</span>
+                </div>
+                <div>
+                    <p class="text-slate-500 text-sm font-medium">Selesai</p>
+                    <p class="text-2xl font-bold text-slate-800"><%= peserta.filter(p => p.status === 'selesai').length %></p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+                    <span class="material-symbols-outlined">warning</span>
+                </div>
+                <div>
+                    <p class="text-slate-500 text-sm font-medium">Pelanggaran</p>
+                    <p class="text-2xl font-bold text-slate-800"><%= peserta.reduce((acc, p) => acc + (parseInt(p.jumlah_pelanggaran) || 0), 0) %></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="font-semibold text-slate-800">Status Peserta Real-time</h3>
+            </div>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                        <th class="p-4 font-semibold border-b">NIS</th>
+                        <th class="p-4 font-semibold border-b">Nama Siswa</th>
+                        <th class="p-4 font-semibold border-b">Status</th>
+                        <th class="p-4 font-semibold border-b">Waktu Mulai</th>
+                        <th class="p-4 font-semibold border-b">Pelanggaran</th>
+                        <th class="p-4 font-semibold border-b text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-slate-100">
+                    <% if (peserta.length > 0) { %>
+                        <% peserta.forEach(p => { %>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="p-4 font-medium text-slate-800"><%= p.nis %></td>
+                            <td class="p-4"><%= p.nama_santri %></td>
+                            <td class="p-4">
+                                <% if (p.status === 'mengerjakan') { %>
+                                    <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Mengerjakan
+                                    </span>
+                                <% } else if (p.status === 'selesai') { %>
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                                        <span class="material-symbols-outlined text-[12px]">check</span> Selesai
+                                    </span>
+                                <% } else { %>
+                                    <span class="bg-slate-100 text-slate-500 px-2 py-1 rounded-full text-xs font-semibold"><%= p.status %></span>
+                                <% } %>
+                            </td>
+                            <td class="p-4 text-slate-600"><%= new Date(p.waktu_mulai).toLocaleTimeString('id-ID') %> WIB</td>
+                            <td class="p-4">
+                                <span class="<%= p.jumlah_pelanggaran > 0 ? 'text-red-600 font-bold' : 'text-slate-400' %>">
+                                    <%= p.jumlah_pelanggaran || 0 %> Pelanggaran
+                                </span>
+                            </td>
+                            <td class="p-4 text-center">
+                                <button class="text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition-colors">Diskualifikasi</button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-400">Belum ada peserta yang memulai ujian.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

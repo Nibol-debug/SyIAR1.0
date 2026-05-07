@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/mata-pelajaran'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-on-surface"><%= title %></h1>
+                <p class="text-sm text-slate-500 mt-1">Kelola data mata pelajaran</p>
+            </div>
+            <button onclick="openModal()" class="px-4 py-2.5 bg-primary text-white rounded-lg hover:opacity-90 transition text-sm font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">add_circle</span> Tambah Mapel
+            </button>
+        </div>
+
+        <!-- Filter -->
+        <form method="GET" class="flex gap-3 mb-6 items-center">
+            <select name="kelompok" class="px-3 py-2 border border-slate-200 rounded-lg text-sm w-48">
+                <option value="">Semua Kelompok</option>
+                <% ['wajib', 'peminatan', 'muatan_lokal', 'keagamaan'].forEach(function(s) { %>
+                    <option value="<%= s %>" <%= filters?.kelompok === s ? 'selected' : '' %>><%= s.replace('_', ' ').toUpperCase() %></option>
+                <% }); %>
+            </select>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium">Filter</button>
+        </form>
+
+        <!-- Table -->
+        <div class="overflow-x-auto rounded-lg border border-slate-200">
+            <table class="w-full">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Kode</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Mata Pelajaran</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Aspek Penilaian</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Kelompok</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <% if (!mapelList || mapelList.length === 0) { %>
+                    <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Tidak ada data mata pelajaran</td></tr>
+                    <% } %>
+                    <% if (mapelList) mapelList.forEach(function(m) { %>
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="px-4 py-3 text-sm font-semibold text-primary"><%= m.kode_mapel %></td>
+                        <td class="px-4 py-3 text-sm"><%= m.nama_mapel %></td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                                <%= m.nama_aspek || 'Belum Terhubung' %>
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 uppercase">
+                                <%= m.kelompok.replace('_', ' ') %>
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm flex gap-1">
+                            <button onclick='editMapel(<%- JSON.stringify(m) %>)' class="p-1.5 rounded-lg hover:bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined text-lg">edit</span>
+                            </button>
+                            <button onclick="deleteMapel('<%= m.id %>', '<%= m.nama_mapel %>')" class="p-1.5 rounded-lg hover:bg-red-50 text-red-600">
+                                <span class="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal -->
+<div id="mapelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg" id="modalTitle">Tambah Mata Pelajaran</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form id="mapelForm" method="POST" action="/mata-pelajaran">
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-slate-600 mb-1 block">Kode Mapel *</label>
+                        <input type="text" name="kode_mapel" id="inputKode" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-slate-600 mb-1 block">Kelompok</label>
+                        <select name="kelompok" id="inputKelompok" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                            <option value="wajib">Wajib</option>
+                            <option value="peminatan">Peminatan</option>
+                            <option value="muatan_lokal">Muatan Lokal</option>
+                            <option value="keagamaan">Keagamaan</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Nama Mata Pelajaran *</label>
+                    <input type="text" name="nama_mapel" id="inputNama" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Hubungkan ke Aspek Penilaian</label>
+                    <select name="aspek_id" id="inputAspek" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                        <option value="">-- Tidak Dihubungkan --</option>
+                        <% aspekList.forEach(a => { %>
+                            <option value="<%= a.id %>"><%= a.nama_kategori %> - <%= a.nama_aspek %></option>
+                        <% }) %>
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">Digunakan untuk integrasi nilai CBT ke E-Rapor</p>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-600 mb-1 block">Deskripsi</label>
+                    <textarea name="deskripsi" id="inputDeskripsi" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 text-slate-600 bg-slate-100 rounded-lg text-sm font-medium hover:bg-slate-200">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal() {
+    document.getElementById('mapelForm').action = '/mata-pelajaran';
+    document.getElementById('modalTitle').textContent = 'Tambah Mata Pelajaran';
+    document.getElementById('mapelForm').reset();
+    document.getElementById('mapelModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('mapelModal').classList.add('hidden');
+}
+
+function editMapel(m) {
+    document.getElementById('mapelForm').action = '/mata-pelajaran/' + m.id;
+    document.getElementById('modalTitle').textContent = 'Edit Mata Pelajaran';
+    document.getElementById('inputKode').value = m.kode_mapel;
+    document.getElementById('inputNama').value = m.nama_mapel;
+    document.getElementById('inputKelompok').value = m.kelompok;
+    document.getElementById('inputAspek').value = m.aspek_id || '';
+    document.getElementById('inputDeskripsi').value = m.deskripsi || '';
+    document.getElementById('mapelModal').classList.remove('hidden');
+}
+
+function deleteMapel(id, name) {
+    if (confirm('Hapus mapel "' + name + '"?')) {
+        fetch('/mata-pelajaran/' + id, { method: 'DELETE', headers: { 'Accept': 'application/json' }})
+            .then(r => r.json()).then(d => { if(d.success) location.reload(); else alert(d.message); });
+    }
+}
+</script>
+</body>
+</html>

@@ -10,10 +10,14 @@ router.use(injectUserToViews);
 router.get('/', requireAuth, permission('kelas.manage'), async (req, res) => {
     try {
         const client = createApiClient(req.session.token);
-        const response = await client.get('/kelas', { params: req.query });
+        const [response, jurusanRes] = await Promise.all([
+            client.get('/kelas', { params: req.query }),
+            client.get('/kelas/jurusan-list')
+        ]);
         res.render('pages/kelas_list', {
             title: 'Manajemen Kelas',
             kelasList: response.data?.data || [],
+            jurusanList: jurusanRes.data?.jurusan_list || {},
             filters: req.query
         });
     } catch (err) {

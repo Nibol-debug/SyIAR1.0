@@ -14,7 +14,14 @@ class MataPelajaranController extends ResourceController
     {
         $model = new MataPelajaranModel();
         $kelompok = $this->request->getGet('kelompok');
-        $data = $model->getActiveByKelompok($kelompok);
+        
+        $builder = $model->select('mata_pelajaran.*, aspek_penilaian.nama_aspek')
+                         ->join('aspek_penilaian', 'aspek_penilaian.id = mata_pelajaran.aspek_id', 'left')
+                         ->where('mata_pelajaran.is_active', 1);
+                         
+        if ($kelompok) $builder->where('kelompok', $kelompok);
+        
+        $data = $builder->orderBy('nama_mapel')->findAll();
         return $this->respond(['success' => true, 'data' => $data]);
     }
 

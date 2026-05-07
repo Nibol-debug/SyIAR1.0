@@ -12,6 +12,7 @@ class Phase2Seeder extends Seeder
             $exists = $this->db->table($table)->where($uniqueField, $data[$uniqueField])->get()->getRow();
             if (!$exists) { $this->db->table($table)->insert($data); return true; }
             return false;
+            
         };
 
         // ============ MATA PELAJARAN ============

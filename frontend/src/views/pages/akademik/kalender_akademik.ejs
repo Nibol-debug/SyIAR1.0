@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<%- include('../../partials/sidebar', { _currentPath: '/akademik/kalender-akademik' }) %>
+<%- include('../../partials/topbar') %>
+
+<main class="ml-64 p-8 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">Kalender Akademik</h1>
+                <p class="text-slate-500 mt-1">Jadwal kegiatan akademik dan hari libur</p>
+            </div>
+            <button onclick="document.getElementById('addModal').classList.remove('hidden')" class="btn-primary flex items-center gap-2">
+                <span class="material-symbols-outlined">add</span>
+                Tambah Agenda
+            </button>
+        </div>
+
+        <%- include('../../partials/alert') %>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
+                        <th class="py-4 px-6 font-medium">Tanggal</th>
+                        <th class="py-4 px-6 font-medium">Kegiatan</th>
+                        <th class="py-4 px-6 font-medium">Jenis</th>
+                        <th class="py-4 px-6 font-medium text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <% if (kalender && kalender.length > 0) { %>
+                        <% kalender.forEach(item => { %>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="py-4 px-6 whitespace-nowrap">
+                                    <%= new Date(item.tanggal_mulai).toLocaleDateString('id-ID') %>
+                                    <% if(item.tanggal_selesai && item.tanggal_selesai !== item.tanggal_mulai) { %>
+                                        - <%= new Date(item.tanggal_selesai).toLocaleDateString('id-ID') %>
+                                    <% } %>
+                                </td>
+                                <td class="py-4 px-6 font-medium text-slate-800">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full" style="background-color: <%= item.warna || '#3b82f6' %>"></div>
+                                        <%= item.judul %>
+                                    </div>
+                                    <% if(item.deskripsi) { %>
+                                    <div class="text-xs text-slate-500 mt-1 font-normal"><%= item.deskripsi %></div>
+                                    <% } %>
+                                </td>
+                                <td class="py-4 px-6 capitalize"><%= item.jenis %></td>
+                                <td class="py-4 px-6 text-right">
+                                    <button class="text-red-500 hover:text-red-700 p-2" onclick="deleteKalender(<%= item.id %>)">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-slate-500">Belum ada agenda kalender akademik.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Add Modal -->
+<div id="addModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 class="font-bold text-slate-800">Tambah Agenda</h3>
+            <button onclick="document.getElementById('addModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form action="/akademik/kalender-akademik" method="POST" class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Judul Kegiatan</label>
+                    <input type="text" name="judul" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Mulai</label>
+                        <input type="date" name="tanggal_mulai" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Selesai (Opsional)</label>
+                        <input type="date" name="tanggal_selesai" class="w-full px-4 py-2.5 rounded-lg border border-slate-200">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Jenis</label>
+                        <select name="jenis" required class="w-full px-4 py-2.5 rounded-lg border border-slate-200">
+                            <option value="kegiatan">Kegiatan</option>
+                            <option value="ujian">Ujian</option>
+                            <option value="libur">Libur</option>
+                            <option value="rapat">Rapat</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Warna Label</label>
+                        <input type="color" name="warna" value="#3b82f6" class="w-full h-[42px] px-1 py-1 rounded-lg border border-slate-200">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Deskripsi Singkat</label>
+                    <textarea name="deskripsi" rows="2" class="w-full px-4 py-2.5 rounded-lg border border-slate-200"></textarea>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('addModal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition-colors">Batal</button>
+                <button type="submit" class="btn-primary">Simpan Data</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+async function deleteKalender(id) {
+    if(!confirm('Yakin ingin menghapus agenda ini?')) return;
+    try {
+        const res = await fetch(`/akademik/kalender-akademik/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if(data.success) location.reload();
+        else alert(data.message || 'Gagal menghapus');
+    } catch (e) {
+        alert('Terjadi kesalahan');
+    }
+}
+</script>
+
+</body>
+</html>

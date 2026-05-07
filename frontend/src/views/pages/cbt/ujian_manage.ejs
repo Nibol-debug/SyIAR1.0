@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<%- include('../../partials/sidebar', { _currentPath: '/cbt/ujian-manage' }) %>
+<%- include('../../partials/topbar') %>
+
+<main class="ml-64 p-8 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">Manajemen Ujian</h1>
+                <p class="text-slate-500 mt-1">Buat, jadwalkan, dan kelola sesi ujian (CBT)</p>
+            </div>
+            <button onclick="openCreateModal()" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">add</span>
+                Buat Jadwal Ujian
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <% if (typeof ujian !== 'undefined' && ujian.length > 0) { %>
+                <% ujian.forEach(u => { %>
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 border-l-4 <%= u.status === 'aktif' ? 'border-l-blue-500' : 'border-l-slate-400' %> hover:shadow-md transition-shadow relative">
+                    <div class="absolute top-4 right-4 text-xs font-bold px-2 py-1 rounded <%= u.status === 'aktif' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500' %>">
+                        <%= u.status.toUpperCase() %>
+                    </div>
+                    <h3 class="font-bold text-slate-800 mb-1"><%= u.judul %></h3>
+                    <p class="text-xs text-slate-400 mb-1"><%= u.nama_mapel %> - <%= u.nama_guru %></p>
+                    <p class="text-sm text-slate-500 mb-4">Token: 
+                        <span class="font-mono bg-slate-100 px-2 py-0.5 rounded font-bold text-slate-800 tracking-widest">
+                            <%= u.token_akses || '---' %>
+                        </span>
+                    </p>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-slate-600 gap-2">
+                            <span class="material-symbols-outlined text-sm">schedule</span> <%= u.durasi_menit %> Menit
+                        </div>
+                        <div class="flex items-center text-sm text-slate-600 gap-2">
+                            <span class="material-symbols-outlined text-sm">quiz</span> <%= u.jumlah_soal %> Soal
+                        </div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <% if (u.status === 'aktif') { %>
+                            <a href="/cbt/ujian-monitor?ujian_id=<%= u.id %>" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2 rounded text-center transition-colors">Monitor</a>
+                            <button onclick="akhiriUjian(<%= u.id %>)" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium py-2 rounded transition-colors">Akhiri</button>
+                        <% } else if (u.status === 'selesai') { %>
+                            <a href="/cbt/ujian-monitor?ujian_id=<%= u.id %>" class="flex-1 bg-slate-100 text-slate-600 text-sm font-medium py-2 rounded text-center">Hasil</a>
+                            <button onclick="importNilai(<%= u.id %>)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 rounded transition-colors flex items-center justify-center gap-1">
+                                <span class="material-symbols-outlined text-sm">sync</span> Impor Nilai
+                            </button>
+                        <% } else { %>
+                            <button onclick="generateToken(<%= u.id %>)" class="w-full bg-primary hover:bg-primary-dark text-white text-sm font-medium py-2 rounded transition-colors">Aktifkan & Token</button>
+                        <% } %>
+                    </div>
+                </div>
+                <% }) %>
+            <% } else { %>
+                <div class="col-span-full bg-white p-12 text-center rounded-xl border border-dashed border-slate-300 text-slate-400">
+                    <span class="material-symbols-outlined text-5xl mb-2">event_busy</span>
+                    <p>Belum ada jadwal ujian yang dibuat.</p>
+                </div>
+            <% } %>
+        </div>
+
+        <script>
+        const AUTH_TOKEN = '<%= token %>';
+
+        async function generateToken(id) {
+            if(!confirm('Aktifkan ujian dan generate token akses?')) return;
+            try {
+                const res = await fetch(`http://localhost:8081/api/ujian/${id}/generate-token`, { 
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN }
+                });
+                const data = await res.json();
+                if(data.status === 200) { alert('Token: ' + data.data?.token_akses); location.reload(); }
+                else alert(data.message || data.messages?.error || 'Gagal generate token');
+            } catch (e) { alert('Terjadi kesalahan: ' + e.message); }
+        }
+
+        async function akhiriUjian(id) {
+            if(!confirm('Akhiri ujian ini? Semua sesi aktif akan ditutup.')) return;
+            try {
+                const res = await fetch(`http://localhost:8081/api/ujian/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'selesai' })
+                });
+                location.reload();
+            } catch (e) { alert('Gagal mengakhiri ujian'); }
+        }
+
+        async function importNilai(id) {
+            if(!confirm('Import semua nilai dari ujian ini ke buku nilai (E-Rapor)?')) return;
+            const btn = event.target.closest('button');
+            btn.disabled = true; btn.textContent = 'Mengimpor...';
+            try {
+                const res = await fetch(`http://localhost:8081/api/penilaian/import-cbt/${id}`, {
+                    headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN }
+                });
+                const data = await res.json();
+                alert(data.message || 'Selesai');
+                location.reload();
+            } catch (e) { alert('Gagal impor nilai'); btn.disabled = false; }
+        }
+        </script>
+    </div>
+</main>
+
+<!-- Modal Buat Ujian -->
+<div id="createModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
+            <h3 class="font-bold text-lg text-slate-800">Buat Jadwal Ujian Baru</h3>
+            <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="createUjianForm" class="p-6 space-y-4">
+            <!-- Judul -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Ujian *</label>
+                <input type="text" id="inputJudul" required placeholder="Contoh: UTS Bahasa Arab Kelas 7A" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+            </div>
+            <!-- Mapel & Guru -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Mata Pelajaran *</label>
+                    <select id="inputMapelUjian" required onchange="loadSoalByMapel()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                        <option value="">-- Pilih Mapel --</option>
+                        <% if (typeof mapel !== 'undefined') { mapel.forEach(m => { %>
+                        <option value="<%= m.id %>"><%= m.nama_mapel %></option>
+                        <% }) } %>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Durasi (menit) *</label>
+                    <input type="number" id="inputDurasi" required value="60" min="5" max="300" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                </div>
+            </div>
+            <!-- Kelas (multi) -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Kelas yang Diikutkan *</label>
+                <div class="flex flex-wrap gap-2 p-3 border border-slate-200 rounded-lg min-h-[44px]" id="kelasCheckboxGroup">
+                    <% if (typeof kelas !== 'undefined') { kelas.forEach(k => { %>
+                    <label class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg cursor-pointer hover:bg-primary/5 text-sm select-none">
+                        <input type="checkbox" class="kelas-cb" value="<%= k.id %>"> <%= k.nama_kelas %>
+                    </label>
+                    <% }) } %>
+                </div>
+            </div>
+            <!-- Tanggal -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Mulai Ujian *</label>
+                    <input type="datetime-local" id="inputMulai" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Selesai Ujian *</label>
+                    <input type="datetime-local" id="inputSelesai" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                </div>
+            </div>
+            <!-- Token & Opsi -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Token Akses</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="inputToken" placeholder="Kosongkan = otomatis" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 uppercase font-mono">
+                        <button type="button" onclick="generateRandomToken()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm" title="Generate acak">
+                            <span class="material-symbols-outlined text-sm">refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Max Peringatan</label>
+                    <input type="number" id="inputMaxPeringatan" value="3" min="1" max="10" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20">
+                </div>
+            </div>
+            <!-- Shuffle -->
+            <div class="flex gap-6">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="inputShuffleSoal" checked class="w-4 h-4 rounded text-primary">
+                    <span class="text-sm text-slate-700">Acak Urutan Soal</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="inputShuffleJawaban" checked class="w-4 h-4 rounded text-primary">
+                    <span class="text-sm text-slate-700">Acak Pilihan Jawaban</span>
+                </label>
+            </div>
+            <!-- Pilih Soal -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Pilih Soal <span class="text-slate-400 font-normal" id="soalCountLabel">(pilih mapel dulu)</span></label>
+                <div id="soalPickerList" class="border border-slate-200 rounded-lg max-h-48 overflow-y-auto p-2 space-y-1 bg-slate-50">
+                    <p class="text-sm text-slate-400 text-center py-4">Pilih mata pelajaran untuk melihat daftar soal.</p>
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                <button type="button" onclick="closeCreateModal()" class="px-4 py-2 text-slate-600 bg-slate-100 rounded-lg text-sm font-medium hover:bg-slate-200">Batal</button>
+                <button type="submit" id="btnBuatUjian" class="px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">event_available</span> Buat Ujian
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const ALL_SOAL = <%- JSON.stringify(typeof allSoal !== 'undefined' ? allSoal : []) %>;
+
+function openCreateModal() {
+    // Set default datetime (now + 1 hour)
+    const now = new Date();
+    const oneHour = new Date(now.getTime() + 60*60*1000);
+    const twoHour = new Date(now.getTime() + 2*60*60*1000);
+    document.getElementById('inputMulai').value = toLocalISO(oneHour);
+    document.getElementById('inputSelesai').value = toLocalISO(twoHour);
+    generateRandomToken();
+    document.getElementById('createModal').classList.remove('hidden');
+}
+function closeCreateModal() { document.getElementById('createModal').classList.add('hidden'); }
+
+function toLocalISO(d) {
+    return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+
+function generateRandomToken() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const token = Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+    document.getElementById('inputToken').value = token;
+}
+
+function loadSoalByMapel() {
+    const mapelId = document.getElementById('inputMapelUjian').value;
+    const container = document.getElementById('soalPickerList');
+    const label = document.getElementById('soalCountLabel');
+    if (!mapelId) {
+        container.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">Pilih mata pelajaran untuk melihat daftar soal.</p>';
+        label.textContent = '(pilih mapel dulu)';
+        return;
+    }
+    const filtered = ALL_SOAL.filter(s => String(s.mapel_id) === String(mapelId));
+    label.textContent = `(${filtered.length} soal tersedia)`;
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="text-sm text-amber-600 text-center py-4">Tidak ada soal untuk mata pelajaran ini. Tambahkan di Bank Soal terlebih dahulu.</p>';
+        return;
+    }
+    container.innerHTML = filtered.map(s => `
+        <label class="flex items-start gap-2 p-2 rounded hover:bg-white cursor-pointer">
+            <input type="checkbox" class="soal-pick mt-0.5 w-4 h-4 text-primary rounded" value="${s.id}" checked>
+            <span class="text-sm text-slate-700">
+                <span class="font-mono text-[10px] bg-${s.tipe_soal==='pg'?'blue':'purple'}-50 text-${s.tipe_soal==='pg'?'blue':'purple'}-600 px-1 py-0.5 rounded mr-1">${s.tipe_soal==='pg'?'PG':'Esai'}</span>
+                ${s.pertanyaan.substring(0, 80)}${s.pertanyaan.length > 80 ? '...' : ''}
+            </span>
+        </label>
+    `).join('');
+}
+
+document.getElementById('createUjianForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnBuatUjian');
+    btn.disabled = true;
+
+    const kelasIds = [...document.querySelectorAll('.kelas-cb:checked')].map(c => parseInt(c.value));
+    const soalIds = [...document.querySelectorAll('.soal-pick:checked')].map(c => parseInt(c.value));
+
+    if (kelasIds.length === 0) { alert('Pilih minimal 1 kelas!'); btn.disabled = false; return; }
+    if (soalIds.length === 0) { alert('Pilih minimal 1 soal!'); btn.disabled = false; return; }
+
+    const payload = {
+        judul: document.getElementById('inputJudul').value,
+        mapel_id: parseInt(document.getElementById('inputMapelUjian').value),
+        guru_id: 1, // Will be taken from JWT on backend
+        kelas_ids: kelasIds,
+        durasi_menit: parseInt(document.getElementById('inputDurasi').value),
+        jumlah_soal: soalIds.length,
+        tanggal_mulai: document.getElementById('inputMulai').value.replace('T', ' ') + ':00',
+        tanggal_selesai: document.getElementById('inputSelesai').value.replace('T', ' ') + ':00',
+        token_akses: document.getElementById('inputToken').value || null,
+        shuffle_soal: document.getElementById('inputShuffleSoal').checked ? 1 : 0,
+        shuffle_jawaban: document.getElementById('inputShuffleJawaban').checked ? 1 : 0,
+        max_peringatan: parseInt(document.getElementById('inputMaxPeringatan').value),
+        status: 'draft',
+        soal_ids: soalIds
+    };
+
+    try {
+        const res = await fetch('http://localhost:8081/api/ujian', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status === 201 || res.ok) {
+            alert('✅ Ujian berhasil dibuat!');
+            location.reload();
+        } else {
+            alert('Gagal: ' + (data.messages?.error || JSON.stringify(data)));
+            btn.disabled = false;
+        }
+    } catch(err) {
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+    }
+};
+</script>
+
+</body>
+</html>

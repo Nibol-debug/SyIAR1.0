@@ -4,7 +4,7 @@ namespace App\Config;
 
 use CodeIgniter\Config\BaseConfig;
 
-class CORS extends BaseConfig
+class Cors extends BaseConfig
 {
     /**
      * Array of allowed origins

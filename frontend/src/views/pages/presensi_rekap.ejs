@@ -25,7 +25,7 @@
                 <select name="kelas_id" required class="px-3 py-2 border border-slate-200 rounded-lg text-sm">
                     <option value="">-- Pilih Kelas --</option>
                     <% if (typeof kelas !== 'undefined') kelas.forEach(function(k) { %>
-                        <option value="<%= k.id %>" <%= filters?.kelas_id == k.id ? 'selected' : '' %>><%= k.nama_kelas %> - <%= k.tingkat %></option>
+                        <option value="<%= k.id %>" <%= filters?.kelas_id == k.id ? 'selected' : '' %>><%= k.nama_kelas %> - <%= k.jurusan %></option>
                     <% }); %>
                 </select>
             </div>

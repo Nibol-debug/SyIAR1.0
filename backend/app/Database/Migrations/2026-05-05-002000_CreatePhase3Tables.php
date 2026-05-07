@@ -12,7 +12,7 @@ class CreatePhase3Tables extends Migration
         if (!$this->db->tableExists('tahun_ajaran')) {
             $this->forge->addField([
                 'id'               => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-                'kode'             => ['type' => 'VARCHAR', 'constraint' => 9, 'comment' => '2025/2026'],
+                'kode'             => ['type' => 'VARCHAR', 'constraint' => 20, 'comment' => '2025/2026'],
                 'nama'             => ['type' => 'VARCHAR', 'constraint' => 50],
                 'semester'         => ['type' => 'ENUM', 'constraint' => ['ganjil', 'genap'], 'default' => 'ganjil'],
                 'tanggal_mulai'    => ['type' => 'DATE'],

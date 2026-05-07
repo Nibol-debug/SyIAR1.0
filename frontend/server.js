@@ -13,7 +13,7 @@ const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8081/api';
+const API_BASE_URL = process.env.API_BASE_URL || 'http://127.0.0.1:8081/api';
 
 // ============================================
 // MIDDLEWARE SETUP
@@ -75,7 +75,7 @@ try {
     permissionMiddleware.any = (perms) => (req, res, next) => next();
 }
 
-let santriRoutes, roleRoutes, kelasRoutes, penilaianRoutes, ppdbRoutes, pegawaiRoutes, presensiRoutes;
+let santriRoutes, roleRoutes, kelasRoutes, penilaianRoutes, ppdbRoutes, pegawaiRoutes, presensiRoutes, mapelRoutes, presensiPegawaiRoutes, akademikRoutes, cbtRoutes;
 try {
     santriRoutes = require('./src/routes/santri');
     roleRoutes = require('./src/routes/roles');
@@ -84,6 +84,10 @@ try {
     ppdbRoutes = require('./src/routes/ppdb');
     pegawaiRoutes = require('./src/routes/pegawai');
     presensiRoutes = require('./src/routes/presensi');
+    mapelRoutes = require('./src/routes/mata_pelajaran');
+    presensiPegawaiRoutes = require('./src/routes/presensi_pegawai');
+    akademikRoutes = require('./src/routes/akademik');
+    cbtRoutes = require('./src/routes/cbt');
     console.log('✅ Routes loaded');
 } catch (err) {
     console.warn('⚠️  Route loading error:', err.message);
@@ -95,6 +99,10 @@ try {
     ppdbRoutes = fallbackRouter();
     pegawaiRoutes = fallbackRouter();
     presensiRoutes = fallbackRouter();
+    mapelRoutes = fallbackRouter();
+    presensiPegawaiRoutes = fallbackRouter();
+    akademikRoutes = fallbackRouter();
+    cbtRoutes = fallbackRouter();
 }
 
 // ============================================
@@ -206,6 +214,10 @@ app.use('/penilaian', penilaianRoutes);
 app.use('/ppdb', ppdbRoutes);
 app.use('/pegawai', pegawaiRoutes);
 app.use('/presensi', presensiRoutes);
+app.use('/mata-pelajaran', mapelRoutes);
+app.use('/presensi-pegawai', presensiPegawaiRoutes);
+app.use('/akademik', akademikRoutes);
+app.use('/cbt', cbtRoutes);
 
 // ============================================
 // ERROR HANDLING

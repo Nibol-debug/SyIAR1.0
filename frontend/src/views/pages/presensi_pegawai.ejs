@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body class="font-sans text-on-surface">
+
+<% var _currentPath = '/presensi-pegawai'; %>
+<%- include('../partials/sidebar') %>
+<%- include('../partials/topbar') %>
+
+<main class="ml-64 p-8 min-h-screen">
+    <div class="mb-6 flex justify-between items-end">
+        <div>
+            <h1 class="text-2xl font-bold text-on-surface">Input Presensi Pegawai</h1>
+            <p class="text-sm text-slate-500 mt-1">Catat kehadiran guru dan staf</p>
+        </div>
+        <a href="/presensi-pegawai/rekap" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition text-sm font-medium flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">calendar_month</span> Lihat Rekap
+        </a>
+    </div>
+
+    <!-- Filter -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+        <form method="GET" class="flex gap-4 items-end" id="filterForm">
+            <div>
+                <label class="text-xs text-slate-500 font-medium mb-1 block">Tanggal Presensi</label>
+                <input type="date" name="tanggal" value="<%= filters?.tanggal %>" required
+                    class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-48"
+                    onchange="document.getElementById('filterForm').submit()">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 h-[38px]">
+                <span class="material-symbols-outlined text-sm">refresh</span> Tampilkan
+            </button>
+        </form>
+    </div>
+
+    <!-- Form Presensi -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <form action="/presensi-pegawai/save" method="POST">
+            <input type="hidden" name="tanggal" value="<%= filters?.tanggal %>">
+            
+            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-6">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-500 w-12">No</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-500">Nama Pegawai</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-500">Jabatan</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-500">Status Kehadiran</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-500">Jam Masuk/Keluar</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-500 w-64">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <% if (!presensiData || presensiData.length === 0) { %>
+                        <tr><td colspan="6" class="px-4 py-8 text-center text-slate-400">Tidak ada data pegawai aktif</td></tr>
+                        <% } else { %>
+                            <% presensiData.forEach(function(p, idx) { %>
+                            <tr class="hover:bg-slate-50/50">
+                                <td class="px-4 py-3 text-slate-500"><%= idx + 1 %></td>
+                                <td class="px-4 py-3 font-medium text-slate-700"><%= p.nama_lengkap %></td>
+                                <td class="px-4 py-3 text-slate-500"><%= p.jabatan || '-' %></td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <% 
+                                            const s = p.status || 'hadir'; 
+                                        %>
+                                        <label class="flex flex-col items-center gap-1 cursor-pointer group">
+                                            <input type="radio" name="status[<%= p.pegawai_id %>]" value="hadir" <%= s === 'hadir' ? 'checked' : '' %> class="peer sr-only">
+                                            <div class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400 peer-checked:border-emerald-500 peer-checked:bg-emerald-500 peer-checked:text-white group-hover:border-emerald-300 transition">H</div>
+                                        </label>
+                                        <label class="flex flex-col items-center gap-1 cursor-pointer group">
+                                            <input type="radio" name="status[<%= p.pegawai_id %>]" value="izin" <%= s === 'izin' ? 'checked' : '' %> class="peer sr-only">
+                                            <div class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400 peer-checked:border-blue-500 peer-checked:bg-blue-500 peer-checked:text-white group-hover:border-blue-300 transition">I</div>
+                                        </label>
+                                        <label class="flex flex-col items-center gap-1 cursor-pointer group">
+                                            <input type="radio" name="status[<%= p.pegawai_id %>]" value="sakit" <%= s === 'sakit' ? 'checked' : '' %> class="peer sr-only">
+                                            <div class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400 peer-checked:border-amber-500 peer-checked:bg-amber-500 peer-checked:text-white group-hover:border-amber-300 transition">S</div>
+                                        </label>
+                                        <label class="flex flex-col items-center gap-1 cursor-pointer group">
+                                            <input type="radio" name="status[<%= p.pegawai_id %>]" value="alpha" <%= s === 'alpha' ? 'checked' : '' %> class="peer sr-only">
+                                            <div class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400 peer-checked:border-red-500 peer-checked:bg-red-500 peer-checked:text-white group-hover:border-red-300 transition">A</div>
+                                        </label>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex gap-2">
+                                        <input type="time" name="jam_masuk[<%= p.pegawai_id %>]" value="<%= p.jam_masuk || '' %>" class="px-2 py-1 border border-slate-200 rounded text-xs w-24">
+                                        <span class="text-slate-400">-</span>
+                                        <input type="time" name="jam_keluar[<%= p.pegawai_id %>]" value="<%= p.jam_keluar || '' %>" class="px-2 py-1 border border-slate-200 rounded text-xs w-24">
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="text" name="keterangan_item[<%= p.pegawai_id %>]" value="<%= p.keterangan || '' %>" placeholder="Keterangan..." class="w-full px-2 py-1.5 border border-slate-200 rounded text-xs focus:ring-1 focus:ring-primary/20">
+                                </td>
+                            </tr>
+                            <% }); %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+            
+            <% if (presensiData && presensiData.length > 0) { %>
+            <div class="flex justify-end gap-3">
+                <button type="submit" class="px-6 py-2.5 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary/90 transition flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">save</span> Simpan Presensi
+                </button>
+            </div>
+            <% } %>
+        </form>
+    </div>
+</main>
+</body>
+</html>
